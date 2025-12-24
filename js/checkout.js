@@ -7,7 +7,7 @@ document.getElementById('checkoutWhatsApp').addEventListener('click', () => {
         return;
     }
     
-const phoneNumber = '917142293282'; // WhatsApp: +91 7142293282    let message = 'Hello, I would like to order from StatusRing Store:%0A%0A';
+const phoneNumber = '919714293282'; // WhatsApp: +9191 97142932827142293282    let message = 'Hello, I would like to order from StatusRing Store:%0A%0A';
     
     message += '---ITEMS----%0A';
     cart.forEach(item => {
