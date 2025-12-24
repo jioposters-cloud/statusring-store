@@ -1,55 +1,92 @@
 // Google Sheets Configuration
 const SHEET_ID = '1PFSwnII1Z-Fd9-QXv3R0fZJJnGw3-rECcq8xXz-ik4s';
-const SHEET_RANGE = 'Products!A:O';
-const API_KEY = 'AIzaSyA-dZvMBZhNxIlwh9g0DRZPE7YbA6_vP0w'; // Public API key for Google Sheets
+// Using Google Sheets CSV export - more reliable than API
+const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1878601810`;
 
 let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
 
-// Fetch data from Google Sheets
+// Fetch data from Google Sheets using CSV export
 async function fetchProducts() {
     try {
-        const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_RANGE}?key=${API_KEY}`;
-        const response = await fetch(url);
-        const data = await response.json();
+        const response = await fetch(SHEET_URL);
+        const csvText = await response.text();
+        const rows = csvText.trim().split('\n');
         
-        if (data.values) {
-            const headers = data.values[0];
-            allProducts = data.values.slice(1).map((row, index) => ({
-                id: index,
-                name: row[0] || '',
-                category: row[1] || '',
-                price: parseFloat(row[2]) || 0,
-                description: row[3] || '',
-                size: row[4] || '',
-                color: row[5] || '',
-                tag: row[6] || '',
-                brand: row[7] || '',
-                stock: parseInt(row[8]) || 0,
-                availability: row[9] || 'Show',
-                thumbnail: row[10] || 'https://via.placeholder.com/250x200?text=No+Image',
-                image1: row[11] || '',
-                image2: row[12] || ''
-            })).filter(p => p.name.trim() !== '');
+        if (rows.length > 0) {
+            // Parse CSV
+            allProducts = rows.slice(1).map((row, index) => {
+                const cols = parseCSVRow(row);
+                return {
+                    id: index,
+                    name: cols[0] || '',
+                    category: cols[1] || '',
+                    price: parseFloat(cols[2]) || 0,
+                    description: cols[3] || '',
+                    size: cols[4] || '',
+                    color: cols[5] || '',
+                    tag: cols[6] || '',
+                    brand: cols[7] || '',
+                    stock: parseInt(cols[8]) || 0,
+                    availability: cols[9] || 'Show',
+                    thumbnail: cols[10] || 'https://via.placeholder.com/250x200?text=No+Image',
+                    image1: cols[11] || '',
+                    image2: cols[12] || ''
+                };
+            }).filter(p => p.name.trim() !== '');
             
             // Extract categories
             allProducts.forEach(p => {
                 if (p.category) categories.add(p.category);
             });
             
+            console.log('Products loaded:', allProducts.length);
+            console.log('Categories:', Array.from(categories));
+            
             displayCategories();
             displayProducts(allProducts);
         }
     } catch (error) {
         console.error('Error fetching products:', error);
-        document.getElementById('categorySections').innerHTML = '<p class="loading">Error loading products. Please check your Google Sheets connection.</p>';
+        document.getElementById('categorySections').innerHTML = '<p class="loading">Error loading products. Please check console for details.</p>';
     }
+}
+
+// Parse CSV row handling quoted values
+function parseCSVRow(row) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < row.length; i++) {
+        const char = row[i];
+        const nextChar = row[i + 1];
+        
+        if (char === '"') {
+            if (insideQuotes && nextChar === '"') {
+                current += '"';
+                i++;
+            } else {
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
 }
 
 // Display categories
 function displayCategories() {
     const categoriesContainer = document.getElementById('categoriesContainer');
+    if (!categoriesContainer) return;
+    
     categoriesContainer.innerHTML = '';
     
     const allBtn = document.createElement('button');
@@ -88,6 +125,8 @@ function filterByCategory(category) {
 // Display products
 function displayProducts(products) {
     const sectionsContainer = document.getElementById('categorySections');
+    if (!sectionsContainer) return;
+    
     sectionsContainer.innerHTML = '';
     
     if (products.length === 0) {
@@ -135,6 +174,7 @@ function createProductCard(product) {
     const img = document.createElement('img');
     img.src = product.thumbnail || 'https://via.placeholder.com/250x200?text=' + encodeURIComponent(product.name);
     img.alt = product.name;
+    img.onerror = () => { img.src = 'https://via.placeholder.com/250x200?text=' + encodeURIComponent(product.name); };
     image.appendChild(img);
     card.appendChild(image);
     
@@ -184,21 +224,37 @@ function createProductCard(product) {
 }
 
 // Search functionality
-document.getElementById('searchBtn').addEventListener('click', () => {
-    const query = document.getElementById('searchInput').value.toLowerCase();
-    filteredProducts = allProducts.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query)
-    );
-    displayProducts(filteredProducts);
-});
-
-document.getElementById('searchInput').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        document.getElementById('searchBtn').click();
+document.addEventListener('DOMContentLoaded', () => {
+    const searchBtn = document.getElementById('searchBtn');
+    const searchInput = document.getElementById('searchInput');
+    
+    if (searchBtn) {
+        searchBtn.addEventListener('click', () => {
+            const query = searchInput.value.toLowerCase();
+            filteredProducts = allProducts.filter(p => 
+                p.name.toLowerCase().includes(query) ||
+                p.description.toLowerCase().includes(query) ||
+                p.category.toLowerCase().includes(query)
+            );
+            displayProducts(filteredProducts);
+        });
     }
+    
+    if (searchInput) {
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchBtn.click();
+            }
+        });
+    }
+    
+    // Initialize
+    fetchProducts();
 });
 
-// Initialize
-window.addEventListener('DOMContentLoaded', fetchProducts);
+// Initial load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', fetchProducts);
+} else {
+    fetchProducts();
+}
