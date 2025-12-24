@@ -1,85 +1,31 @@
-// Google Sheets Configuration
-const SHEET_ID = '1PFSwnII1Z-Fd9-QXv3R0fZJJnGw3-rECcq8xXz-ik4s';
-// Using Google Sheets CSV export - more reliable than API
-const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1878601810`;
+// Store Configuration - Load from data.js
 
 let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
 
-// Fetch data from Google Sheets using CSV export
-async function fetchProducts() {
-    try {
-        const response = await fetch(SHEET_URL);
-        const csvText = await response.text();
-        const rows = csvText.trim().split('\n');
+// Load products from data.js
+function loadProducts() {
+    // products is defined in data.js
+    if (typeof products !== 'undefined' && products.length > 0) {
+        allProducts = products;
         
-        if (rows.length > 0) {
-            // Parse CSV
-            allProducts = rows.slice(1).map((row, index) => {
-                const cols = parseCSVRow(row);
-                return {
-                    id: index,
-                    name: cols[0] || '',
-                    category: cols[1] || '',
-                    price: parseFloat(cols[2]) || 0,
-                    description: cols[3] || '',
-                    size: cols[4] || '',
-                    color: cols[5] || '',
-                    tag: cols[6] || '',
-                    brand: cols[7] || '',
-                    stock: parseInt(cols[8]) || 0,
-                    availability: cols[9] || 'Show',
-                    thumbnail: cols[10] || 'https://via.placeholder.com/250x200?text=No+Image',
-                    image1: cols[11] || '',
-                    image2: cols[12] || ''
-                };
-            }).filter(p => p.name.trim() !== '');
-            
-            // Extract categories
-            allProducts.forEach(p => {
-                if (p.category) categories.add(p.category);
-            });
-            
-            console.log('Products loaded:', allProducts.length);
-            console.log('Categories:', Array.from(categories));
-            
-            displayCategories();
-            displayProducts(allProducts);
-        }
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        document.getElementById('categorySections').innerHTML = '<p class="loading">Error loading products. Please check console for details.</p>';
-    }
-}
-
-// Parse CSV row handling quoted values
-function parseCSVRow(row) {
-    const result = [];
-    let current = '';
-    let insideQuotes = false;
-    
-    for (let i = 0; i < row.length; i++) {
-        const char = row[i];
-        const nextChar = row[i + 1];
-        
-        if (char === '"') {
-            if (insideQuotes && nextChar === '"') {
-                current += '"';
-                i++;
-            } else {
-                insideQuotes = !insideQuotes;
+        // Extract unique categories
+        allProducts.forEach(p => {
+            if (p.category) {
+                categories.add(p.category);
             }
-        } else if (char === ',' && !insideQuotes) {
-            result.push(current.trim());
-            current = '';
-        } else {
-            current += char;
-        }
+        });
+        
+        console.log('Products loaded:', allProducts.length);
+        console.log('Categories:', Array.from(categories));
+        
+        displayCategories();
+        displayProducts(allProducts);
+    } else {
+        console.error('No products found in data.js');
+        document.getElementById('categorySections').innerHTML = '<p class="loading">No products loaded. Please check data.js</p>';
     }
-    
-    result.push(current.trim());
-    return result;
 }
 
 // Display categories
@@ -89,6 +35,7 @@ function displayCategories() {
     
     categoriesContainer.innerHTML = '';
     
+    // Add "All" button
     const allBtn = document.createElement('button');
     allBtn.className = 'category-btn active';
     allBtn.textContent = 'All';
@@ -99,6 +46,7 @@ function displayCategories() {
     };
     categoriesContainer.appendChild(allBtn);
     
+    // Add category buttons
     Array.from(categories).sort().forEach(category => {
         const btn = document.createElement('button');
         btn.className = 'category-btn';
@@ -169,6 +117,7 @@ function createProductCard(product) {
     const card = document.createElement('div');
     card.className = 'product-card';
     
+    // Image
     const image = document.createElement('div');
     image.className = 'product-image';
     const img = document.createElement('img');
@@ -178,6 +127,7 @@ function createProductCard(product) {
     image.appendChild(img);
     card.appendChild(image);
     
+    // Info
     const info = document.createElement('div');
     info.className = 'product-info';
     
@@ -196,6 +146,7 @@ function createProductCard(product) {
     description.textContent = product.description || product.size || '';
     info.appendChild(description);
     
+    // Footer
     const footer = document.createElement('div');
     footer.className = 'product-footer';
     
@@ -248,13 +199,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Initialize
-    fetchProducts();
+    loadProducts();
 });
 
 // Initial load
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', fetchProducts);
+    document.addEventListener('DOMContentLoaded', loadProducts);
 } else {
-    fetchProducts();
+    loadProducts();
 }
