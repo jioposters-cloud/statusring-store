@@ -1,210 +1,157 @@
-// Store Configuration - Load from data.js
-
+// Store Configuration - Load from Google Sheets
 let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
 
-// Load products from data.js
-function loadProducts() {
-    // products is defined in data.js
-    if (typeof products !== 'undefined' && products.length > 0) {
-        allProducts = products;
+const SHEET_ID = '1PFSwnII1Z-Fd9-QXv3R0fZJJnGw3-rECcq8xXz-ik4s';
+const SHEET_NAME = 'Products';
+const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+
+// Parse CSV data
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    if (lines.length < 2) return [];
+    
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const products = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+        const values = parseCSVLine(lines[i]);
+        if (values.length === 0 || !values[0]) continue;
         
-        // Extract unique categories
-        allProducts.forEach(p => {
-            if (p.category) {
-                categories.add(p.category);
-            }
+        const product = {};
+        headers.forEach((header, index) => {
+            product[header] = values[index] || '';
         });
         
-        console.log('Products loaded:', allProducts.length);
-        console.log('Categories:', Array.from(categories));
+        if (product.name) {
+            products.push({
+                id: i,
+                name: product.name,
+                category: product.category || 'General',
+                price: parseFloat(product.price) || 0,
+                description: product.description || '',
+                size: product.size || '',
+                color: product.color || '',
+                tag: product.tag || '',
+                brand: product.brand || 'StatusRing',
+                stock: parseInt(product.stock) || 100,
+                availability: product.availability || 'Show',
+                thumbnail: `https://via.placeholder.com/250x200?text=${encodeURIComponent(product.name)}`,
+                image1: '',
+                image2: ''
+            });
+        }
+    }
+    
+    return products;
+}
+
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let insideQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
         
-        displayCategories();
-        displayProducts(allProducts);
-    } else {
-        console.error('No products found in data.js');
-        document.getElementById('categorySections').innerHTML = '<p class="loading">No products loaded. Please check data.js</p>';
+        if (char === '"') {
+            if (insideQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++;
+            } else {
+                insideQuotes = !insideQuotes;
+            }
+        } else if (char === ',' && !insideQuotes) {
+            result.push(current.trim());
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current.trim());
+    return result;
+}
+
+async function loadProducts() {
+    try {
+        console.log('Loading from:', CSV_URL);
+        const response = await fetch(CSV_URL);
+        const csvText = await response.text();
+        
+        allProducts = parseCSV(csvText);
+        
+        if (allProducts.length > 0) {
+            allProducts.forEach(p => {
+                if (p.category) categories.add(p.category);
+            });
+            
+            console.log('Products loaded:', allProducts.length);
+            console.log('Categories:', Array.from(categories));
+            
+            displayCategories();
+            displayProducts(allProducts);
+        } else {
+            console.error('No products');
+            document.getElementById('categorySections').innerHTML = '<p>No products found</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
     }
 }
 
-// Display categories
 function displayCategories() {
-    const categoriesContainer = document.getElementById('categoriesContainer');
-    if (!categoriesContainer) return;
+    const container = document.getElementById('categoriesContainer');
+    if (!container) return;
     
-    categoriesContainer.innerHTML = '';
+    container.innerHTML = '';
+    const sorted = Array.from(categories).sort();
     
-    // Add "All" button
-    const allBtn = document.createElement('button');
-    allBtn.className = 'category-btn active';
-    allBtn.textContent = 'All';
-    allBtn.onclick = () => {
-        filterByCategory('All');
-        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-        allBtn.classList.add('active');
-    };
-    categoriesContainer.appendChild(allBtn);
+    const btn = document.createElement('button');
+    btn.className = 'category-btn active';
+    btn.textContent = 'All';
+    btn.onclick = () => filterByCategory('all');
+    container.appendChild(btn);
     
-    // Add category buttons
-    Array.from(categories).sort().forEach(category => {
-        const btn = document.createElement('button');
-        btn.className = 'category-btn';
-        btn.textContent = category;
-        btn.onclick = () => {
-            filterByCategory(category);
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        };
-        categoriesContainer.appendChild(btn);
+    sorted.forEach(cat => {
+        const b = document.createElement('button');
+        b.className = 'category-btn';
+        b.textContent = cat;
+        b.onclick = () => filterByCategory(cat);
+        container.appendChild(b);
     });
 }
 
-// Filter products by category
-function filterByCategory(category) {
-    if (category === 'All') {
-        filteredProducts = [...allProducts];
+function filterByCategory(cat) {
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (cat === 'all') {
+        filteredProducts = allProducts;
     } else {
-        filteredProducts = allProducts.filter(p => p.category === category);
+        filteredProducts = allProducts.filter(p => p.category === cat);
     }
+    
     displayProducts(filteredProducts);
 }
 
-// Display products
 function displayProducts(products) {
-    const sectionsContainer = document.getElementById('categorySections');
-    if (!sectionsContainer) return;
+    const section = document.getElementById('categorySections');
+    section.innerHTML = '';
     
-    sectionsContainer.innerHTML = '';
-    
-    if (products.length === 0) {
-        sectionsContainer.innerHTML = '<p class="empty-cart">No products found</p>';
-        return;
-    }
-    
-    // Group by category
-    const grouped = {};
     products.forEach(p => {
-        if (!grouped[p.category]) grouped[p.category] = [];
-        grouped[p.category].push(p);
-    });
-    
-    // Display each category
-    Object.keys(grouped).sort().forEach(category => {
-        const section = document.createElement('div');
-        section.className = 'category-section';
-        
-        const title = document.createElement('h2');
-        title.className = 'section-title';
-        title.textContent = category;
-        section.appendChild(title);
-        
-        const grid = document.createElement('div');
-        grid.className = 'products-grid';
-        
-        grouped[category].forEach(product => {
-            const card = createProductCard(product);
-            grid.appendChild(card);
-        });
-        
-        section.appendChild(grid);
-        sectionsContainer.appendChild(section);
+        const html = `<div class="product-card"><div class="product-image"><img src="${p.thumbnail}" alt="${p.name}"></div><div class="product-info"><h3>${p.name}</h3><p>${p.category}</p><p>${p.description}</p><div class="product-footer"><span>Rs ${p.price}</span><button onclick="addToCart(${p.id},'${p.name}',${p.price},'${p.thumbnail}')">Add</button></div></div></div>`;
+        section.innerHTML += html;
     });
 }
 
-// Create product card
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    
-    // Image
-    const image = document.createElement('div');
-    image.className = 'product-image';
-    const img = document.createElement('img');
-    img.src = product.thumbnail || 'https://via.placeholder.com/250x200?text=' + encodeURIComponent(product.name);
-    img.alt = product.name;
-    img.onerror = () => { img.src = 'https://via.placeholder.com/250x200?text=' + encodeURIComponent(product.name); };
-    image.appendChild(img);
-    card.appendChild(image);
-    
-    // Info
-    const info = document.createElement('div');
-    info.className = 'product-info';
-    
-    const name = document.createElement('div');
-    name.className = 'product-name';
-    name.textContent = product.name;
-    info.appendChild(name);
-    
-    const price = document.createElement('div');
-    price.className = 'product-price';
-    price.textContent = '₹' + product.price;
-    info.appendChild(price);
-    
-    const description = document.createElement('div');
-    description.className = 'product-description';
-    description.textContent = product.description || product.size || '';
-    info.appendChild(description);
-    
-    // Footer
-    const footer = document.createElement('div');
-    footer.className = 'product-footer';
-    
-    const colorSelect = document.createElement('select');
-    colorSelect.className = 'color-select';
-    colorSelect.innerHTML = '<option value="' + (product.color || 'Default') + '">' + (product.color || 'Color') + '</option>';
-    footer.appendChild(colorSelect);
-    
-    const quantityInput = document.createElement('input');
-    quantityInput.type = 'number';
-    quantityInput.className = 'quantity-input';
-    quantityInput.value = '1';
-    quantityInput.min = '1';
-    quantityInput.max = product.stock || 100;
-    footer.appendChild(quantityInput);
-    info.appendChild(footer);
-    
-    const addBtn = document.createElement('button');
-    addBtn.className = 'add-to-cart-btn';
-    addBtn.textContent = 'Add to Cart';
-    addBtn.onclick = () => addToCart(product, parseInt(quantityInput.value), colorSelect.value);
-    info.appendChild(addBtn);
-    
-    card.appendChild(info);
-    return card;
+function searchProducts() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    filteredProducts = allProducts.filter(p => 
+        p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)
+    );
+    displayProducts(filteredProducts);
 }
 
-// Search functionality
-document.addEventListener('DOMContentLoaded', () => {
-    const searchBtn = document.getElementById('searchBtn');
-    const searchInput = document.getElementById('searchInput');
-    
-    if (searchBtn) {
-        searchBtn.addEventListener('click', () => {
-            const query = searchInput.value.toLowerCase();
-            filteredProducts = allProducts.filter(p => 
-                p.name.toLowerCase().includes(query) ||
-                p.description.toLowerCase().includes(query) ||
-                p.category.toLowerCase().includes(query)
-            );
-            displayProducts(filteredProducts);
-        });
-    }
-    
-    if (searchInput) {
-        searchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                searchBtn.click();
-            }
-        });
-    }
-    
-    loadProducts();
-});
-
-// Initial load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadProducts);
-} else {
-    loadProducts();
-}
+window.addEventListener('DOMContentLoaded', loadProducts);
