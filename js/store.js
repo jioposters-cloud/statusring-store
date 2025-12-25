@@ -82,3 +82,14 @@ function searchProducts() {
 }
 
 window.addEventListener('DOMContentLoaded', loadProducts);
+
+// Initialize store function - can be called by sheets-loader to reinit with new data
+function initStore() {
+  // Reset state
+  allProducts = [];
+  filteredProducts = [];
+  categories = new Set();
+  
+  // Reload and display
+  loadProducts();
+}
