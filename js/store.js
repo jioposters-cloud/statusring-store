@@ -5,80 +5,100 @@ let categories = new Set();
 
 // Load products from data.js
 function loadProducts() {
-    if (typeof products !== 'undefined' && products.length > 0) {
-        allProducts = products;
-        
-        allProducts.forEach(p => {
-            if (p.category) {
-                categories.add(p.category);
-            }
-        });
-        
-        console.log('Products loaded:', allProducts.length);
-        displayCategories();
-        displayProducts(allProducts);
-    } else {
-        console.error('No products found');
-    }
+  if (typeof products !== 'undefined' && products.length > 0) {
+    allProducts = products;
+    
+    allProducts.forEach(p => {
+      if (p.category) {
+        categories.add(p.category);
+      }
+    });
+    
+    console.log('Products loaded:', allProducts.length);
+    displayCategories();
+    displayProducts(allProducts);
+  } else {
+    console.error('No products found');
+  }
 }
 
 function displayCategories() {
-    const container = document.getElementById('categoriesContainer');
-    if (!container) return;
-    
-    container.innerHTML = '';
-    const sorted = Array.from(categories).sort();
-    
-    const btn = document.createElement('button');
-    btn.className = 'category-btn active';
-    btn.textContent = 'All';
-    btn.onclick = () => filterByCategory('all');
-    container.appendChild(btn);
-    
-    sorted.forEach(cat => {
-        const b = document.createElement('button');
-        b.className = 'category-btn';
-        b.textContent = cat;
-        b.onclick = () => filterByCategory(cat);
-        container.appendChild(b);
-    });
+  const container = document.getElementById('categoriesContainer');
+  if (!container) return;
+  
+  container.innerHTML = '';
+  const sorted = Array.from(categories).sort();
+  
+  const btn = document.createElement('button');
+  btn.className = 'category-btn active';
+  btn.textContent = 'All';
+  btn.onclick = () => filterByCategory('all');
+  container.appendChild(btn);
+  
+  sorted.forEach(cat => {
+    const b = document.createElement('button');
+    b.className = 'category-btn';
+    b.textContent = cat;
+    b.onclick = () => filterByCategory(cat);
+    container.appendChild(b);
+  });
 }
 
 function filterByCategory(cat) {
-    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-    event.target.classList.add('active');
-    
-    if (cat === 'all') {
-        filteredProducts = allProducts;
-    } else {
-        filteredProducts = allProducts.filter(p => p.category === cat);
-    }
-    
-    displayProducts(filteredProducts);
+  document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  if (cat === 'all') {
+    filteredProducts = allProducts;
+  } else {
+    filteredProducts = allProducts.filter(p => p.category === cat);
+  }
+  
+  displayProducts(filteredProducts);
 }
 
 function displayProducts(products) {
-    const section = document.getElementById('categorySections');
-    section.innerHTML = '';
+  const section = document.getElementById('categorySections');
+  section.innerHTML = '';
+  
+  if (products.length === 0) {
+    section.innerHTML = '<div class="loading">No products found</div>';
+    return;
+  }
+  
+  const grid = document.createElement('div');
+  grid.className = 'products-grid';
+  
+  products.forEach(p => {
+    const sellerName = p.seller || 'Status Ring';
+    const productImage = p.thumbnail || 'https://via.placeholder.com/280x250?text=Product';
     
-    if (products.length === 0) {
-        section.innerHTML = '<p style="text-align:center; padding:20px;">No products</p>';
-        return;
-    }
-    
-    products.forEach(p => {
-        const html = `<div class="product-card"><div class="product-image"><img src="${p.thumbnail}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/250x200?text=${encodeURIComponent(p.name)}';" style="width:100%; height:200px; object-fit:cover;"></div><div class="product-info"><h3>${p.name}</h3><p class="category">${p.category}</p><p>${p.description}</p><div class="product-footer"><span class="price" style="font-weight:bold; color:#333;">₹${p.price}</span><button class="add-to-cart-btn" onclick="addToCart(${p.id},'${p.name}',${p.price},'${p.thumbnail}')">Add Cart</button></div></div></div>`;
-        section.innerHTML += html;
-    });
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <div class="product-image">
+        <img src="${productImage}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/280x250?text=Product';">
+      </div>
+      <div class="product-info">
+        <h3 class="product-name">${p.name}</h3>
+        <p class="product-seller">${sellerName}</p>
+        <div class="product-price">₹${p.price}</div>
+        <button class="add-to-cart-btn" onclick="addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  
+  section.appendChild(grid);
 }
 
 function searchProducts() {
-    const q = document.getElementById('searchInput').value.toLowerCase();
-    filteredProducts = allProducts.filter(p => 
-        p.name.toLowerCase().includes(q) || 
-        p.category.toLowerCase().includes(q)
-    );
-    displayProducts(filteredProducts);
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  filteredProducts = allProducts.filter(p => 
+    p.name.toLowerCase().includes(q) || 
+    p.category.toLowerCase().includes(q)
+  );
+  displayProducts(filteredProducts);
 }
 
 window.addEventListener('DOMContentLoaded', loadProducts);
