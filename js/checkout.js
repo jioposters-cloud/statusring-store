@@ -23,7 +23,7 @@ document.addEventListener('click', function (e) {
         const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
         window.open(whatsappURL, '_blank');
     }
-})    }
+})
 
 // Razorpay Checkout
 const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
