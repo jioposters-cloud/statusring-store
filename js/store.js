@@ -1,4 +1,4 @@
-// Store Configuration - Load from data.js
+// Store Configuration
 const WHATSAPP_NUMBER = '919714293282';
 let allProducts = [];
 let filteredProducts = [];
@@ -7,12 +7,12 @@ let categories = new Set();
 // Load products from data.js
 function loadProducts() {
   if (typeof products !== 'undefined' && products.length > 0) {
-    // Filter out empty/invalid products (rows without names)
-    allProducts = products.filter(p => p && p.name && p.name.trim());
+    // Filter: must have name AND category AND price
+    allProducts = products.filter(p => p && p.name && p.name.trim() && p.category && p.category.trim() && p.price);
     
     allProducts.forEach(p => {
-      if (p.category) {
-        categories.add(p.category);
+      if (p.category && p.category.trim()) {
+        categories.add(p.category.trim());
       }
     });
     
@@ -90,9 +90,7 @@ function displayProducts(products) {
       </div>
     `;
     
-    // Add click handler to show product details
     card.onclick = () => showProductDetail(p);
-    
     grid.appendChild(card);
   });
   
@@ -114,7 +112,6 @@ function searchProducts() {
 }
 
 function showProductDetail(product) {
-  // Store product in window for detail page to access
   window.currentProduct = product;
   window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
   
@@ -129,12 +126,21 @@ function showProductDetail(product) {
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
     document.getElementById('detailDescription').textContent = product.description || 'No description available';
     
+    // Set up the add to cart button in modal
+    const detailBtn = document.getElementById('detailAddToCart');
+    if (detailBtn) {
+      detailBtn.onclick = () => {
+        addToCart(product.id, product.name, product.price, product.thumbnail);
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
+      };
+    }
+    
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
   }
 }
 
-// Set up search input event listener
 window.addEventListener('DOMContentLoaded', function() {
   loadProducts();
   
@@ -162,7 +168,6 @@ window.addEventListener('DOMContentLoaded', function() {
   }
 });
 
-// Initialize store function
 function initStore() {
   allProducts = [];
   filteredProducts = [];
