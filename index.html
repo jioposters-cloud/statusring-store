@@ -92,5 +92,44 @@
     <script src="js/cart.js"></script>
     <script src="js/checkout.js"></script>
         <script src="js/sheets-loader.js"></script>
+    <!-- Product Detail Modal -->
+<div id="productModal" class="product-modal">
+  <div class="modal-overlay" id="modalOverlay"></div>
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">&times;</button>
+    <div class="modal-body">
+      <div class="product-detail-image">
+        <img id="detailImage" src="" alt="Product">
+      </div>
+      <div class="product-detail-info">
+        <h1 id="detailName"></h1>
+        <p class="detail-seller" id="detailSeller"></p>
+        <div class="detail-price">
+          <span id="detailPrice"></span>
+        </div>
+        <div class="detail-specs">
+          <div class="spec-item">
+            <strong>Size:</strong> <span id="detailSize"></span>
+          </div>
+          <div class="spec-item">
+            <strong>Color:</strong> <span id="detailColor"></span>
+          </div>
+          <div class="spec-item">
+            <strong>Brand:</strong> <span id="detailBrand"></span>
+          </div>
+        </div>
+        <div class="detail-description">
+          <h3>Description</h3>
+          <p id="detailDescription"></p>
+        </div>
+        <div class="detail-actions">
+          <button id="detailAddToCart" class="btn-add-to-cart">Add to cart</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/detail.js"></script>
 </body>
 </html>
