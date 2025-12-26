@@ -69,7 +69,7 @@ function parseCSVToProducts(csvText) {
         id: i,
         name: columns[nameIdx] || 'Product',
         category: columns[categoryIdx] || 'General',
-        price: parseFloat(columns[priceIdx]) || 0,
+        price: parseFloat((columns[priceIdx] || '0').replace(/,/g, '')) || 0,
         description: columns[descriptionIdx] || '',
         size: columns[sizeIdx] || '',
         color: columns[colorIdx] || 'Multi',
