@@ -1,31 +1,29 @@
 // Checkout functionality with WhatsApp & Razorpay
 
-// WhatsApp Checkout
-const checkoutWhatsAppBtn = document.getElementById('checkoutWhatsApp');
-if (checkoutWhatsAppBtn) {
-    checkoutWhatsAppBtn.addEventListener('click', () => {
-    if (cart.length === 0) {
-        alert('Your cart is empty!');
-        return;
+// This "delegated" listener works even if the button is loaded late
+document.addEventListener('click', function (e) {
+    if (e.target && (e.target.id === 'checkoutWhatsApp' || e.target.closest('#checkoutWhatsApp'))) {
+        
+        const cart = JSON.parse(localStorage.getItem('cart')) || [];
+        if (cart.length === 0) {
+            alert('Your cart is empty!');
+            return;
+        }
+
+        const phoneNumber = '919714293282'; 
+        let message = 'Hello StatusRing, I would like to order:%0A%0A';
+        
+        cart.forEach(item => {
+            message += `* ${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}%0A`;
+        });
+
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        message += `%0A*Total Amount: ₹${total}*`;
+
+        const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
+        window.open(whatsappURL, '_blank');
     }
-    
-const phoneNumber = '919714293282'; // WhatsApp: +91 9714293282    let message = 'Hello, I would like to order from StatusRing Store:%0A%0A';
-    
-    message += '---ITEMS----%0A';
-    cart.forEach(item => {
-        message += `${item.name}%0A`;
-        message += `Quantity: ${item.quantity} x ₹${item.price}%0A`;
-        message += `Total: ₹${item.price * item.quantity}%0A%0A`;
-    });
-    
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `---GRAND TOTAL----%0A₹${total}%0A%0A`;
-    message += 'Please confirm my order and provide delivery details.';
-    
-    const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
-    window.open(whatsappURL, '_blank');
-});
-    }
+})    }
 
 // Razorpay Checkout
 const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
