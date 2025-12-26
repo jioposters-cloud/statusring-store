@@ -1,7 +1,9 @@
 // Checkout functionality with WhatsApp & Razorpay
 
 // WhatsApp Checkout
-document.getElementById('checkoutWhatsApp').addEventListener('click', () => {
+const checkoutWhatsAppBtn = document.getElementById('checkoutWhatsApp');
+if (checkoutWhatsAppBtn) {
+    checkoutWhatsAppBtn.addEventListener('click', () => {
     if (cart.length === 0) {
         alert('Your cart is empty!');
         return;
@@ -23,9 +25,12 @@ const phoneNumber = '919714293282'; // WhatsApp: +91 9714293282    let message =
     const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappURL, '_blank');
 });
+    }
 
 // Razorpay Checkout
-document.getElementById('checkoutRazorpay').addEventListener('click', () => {
+const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
+if (checkoutRazorpayBtn) {
+    checkoutRazorpayBtn.addEventListener('click', () => {
     if (cart.length === 0) {
         alert('Your cart is empty!');
         return;
@@ -61,6 +66,7 @@ document.getElementById('checkoutRazorpay').addEventListener('click', () => {
     
     rzp1.open();
 });
+    }
 
 function processPayment(response) {
     const paymentDetails = {
