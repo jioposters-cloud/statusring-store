@@ -1,4 +1,5 @@
 // Store Configuration - Load from data.js
+const WHATSAPP_NUMBER = '919714293282';
 let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
@@ -6,7 +7,8 @@ let categories = new Set();
 // Load products from data.js
 function loadProducts() {
   if (typeof products !== 'undefined' && products.length > 0) {
-    allProducts = products;
+    // Filter out empty/invalid products (rows without names)
+    allProducts = products.filter(p => p && p.name && p.name.trim());
     
     allProducts.forEach(p => {
       if (p.category) {
@@ -70,11 +72,12 @@ function displayProducts(products) {
   grid.className = 'products-grid';
   
   products.forEach(p => {
-    const sellerName = p.seller || 'Status Ring';
+    const sellerName = p.brand || 'Status Ring';
     const productImage = p.thumbnail || 'https://via.placeholder.com/280x250?text=Product';
     
     const card = document.createElement('div');
     card.className = 'product-card';
+    card.style.cursor = 'pointer';
     card.innerHTML = `
       <div class="product-image">
         <img src="${productImage}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/280x250?text=Product';">
@@ -83,9 +86,13 @@ function displayProducts(products) {
         <h3 class="product-name">${p.name}</h3>
         <p class="product-seller">${sellerName}</p>
         <div class="product-price">₹${p.price}</div>
-        <button class="add-to-cart-btn" onclick="addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
+        <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
       </div>
     `;
+    
+    // Add click handler to show product details
+    card.onclick = () => showProductDetail(p);
+    
     grid.appendChild(card);
   });
   
@@ -94,22 +101,71 @@ function displayProducts(products) {
 
 function searchProducts() {
   const q = document.getElementById('searchInput').value.toLowerCase();
-  filteredProducts = allProducts.filter(p => 
-    p.name.toLowerCase().includes(q) || 
-    p.category.toLowerCase().includes(q)
-  );
+  if (q.length === 0) {
+    filteredProducts = allProducts;
+  } else {
+    filteredProducts = allProducts.filter(p => 
+      (p.name && p.name.toLowerCase().includes(q)) || 
+      (p.category && p.category.toLowerCase().includes(q)) ||
+      (p.description && p.description.toLowerCase().includes(q))
+    );
+  }
   displayProducts(filteredProducts);
 }
 
-window.addEventListener('DOMContentLoaded', loadProducts);
+function showProductDetail(product) {
+  // Store product in window for detail page to access
+  window.currentProduct = product;
+  window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
+  
+  const modal = document.getElementById('productModal');
+  if (modal) {
+    document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/400x400?text=Product';
+    document.getElementById('detailName').textContent = product.name;
+    document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
+    document.getElementById('detailPrice').textContent = '₹' + product.price;
+    document.getElementById('detailSize').textContent = product.size || 'N/A';
+    document.getElementById('detailColor').textContent = product.color || 'N/A';
+    document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
+    document.getElementById('detailDescription').textContent = product.description || 'No description available';
+    
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+}
 
-// Initialize store function - can be called by sheets-loader to reinit with new data
+// Set up search input event listener
+window.addEventListener('DOMContentLoaded', function() {
+  loadProducts();
+  
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    searchInput.addEventListener('input', searchProducts);
+  }
+  
+  const closeModal = document.getElementById('closeModal');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modal = document.getElementById('productModal');
+  
+  if (closeModal) {
+    closeModal.onclick = () => {
+      if (modal) modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    };
+  }
+  
+  if (modalOverlay) {
+    modalOverlay.onclick = () => {
+      if (modal) modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+    };
+  }
+});
+
+// Initialize store function
 function initStore() {
-  // Reset state
   allProducts = [];
   filteredProducts = [];
   categories = new Set();
-  
-  // Reload and display
   loadProducts();
 }
