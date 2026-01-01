@@ -37,8 +37,7 @@ if (checkoutRazorpayBtn) {
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     const options = {
-        key: 'rzp_test_1DP5mmOlF5G0d4', // Replace with your Razorpay Key ID
-        amount: total * 100, // Amount in paise
+ key: 'rzp_live_RycGGdBVVqAFT9', // Replace with your Razorpay Key ID        amount: total * 100, // Amount in paise
         currency: 'INR',
         name: 'StatusRing Store',
         description: 'Buy Premium Dental & Medical Education Posters',
