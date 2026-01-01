@@ -1,10 +1,10 @@
 // Checkout functionality with WhatsApp & Razorpay
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
 // This "delegated" listener works even if the button is loaded late
 document.addEventListener('click', function (e) {
     if (e.target && (e.target.id === 'checkoutWhatsApp' || e.target.closest('#checkoutWhatsApp'))) {
         
-        const cart = JSON.parse(localStorage.getItem('cart')) || [];
         if (cart.length === 0) {
             alert('Your cart is empty!');
             return;
