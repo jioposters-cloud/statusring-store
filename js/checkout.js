@@ -31,7 +31,7 @@ if (checkoutWhatsAppBtn) {
   });
 }
 
-// Razorpay Checkout
+// Razorpay Checkout - Without Order ID (for static sites)
 const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
 if (checkoutRazorpayBtn) {
   checkoutRazorpayBtn.addEventListener('click', () => {
@@ -44,13 +44,15 @@ if (checkoutRazorpayBtn) {
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
+    // Generate a unique reference ID
+    const referenceId = 'ref_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
     const options = {
       key: 'rzp_live_RycGGdBVVqAFT9',
       amount: total * 100,
       currency: 'INR',
       name: 'StatusRing Store',
       description: 'Buy Premium Dental & Medical Education Posters',
-      order_id: 'order_' + Date.now(),
       handler: function(response) {
         processPayment(response, cart);
       },
@@ -61,16 +63,27 @@ if (checkoutRazorpayBtn) {
       },
       theme: {
         color: '#1abc9c'
+      },
+      modal: {
+        ondismiss: function() {
+          console.log('Checkout closed');
+        }
       }
     };
     
-    const rzp1 = new Razorpay(options);
-    
-    rzp1.on('payment.failed', function(response) {
-      alert('Payment Failed: ' + response.error.description);
-    });
-    
-    rzp1.open();
+    // Create and open Razorpay instance
+    try {
+      const rzp1 = new Razorpay(options);
+      
+      rzp1.on('payment.failed', function(response) {
+        alert('Payment Failed: ' + response.error.description);
+      });
+      
+      rzp1.open();
+    } catch (error) {
+      alert('Payment initialization error: ' + error.message);
+      console.error('Razorpay Error:', error);
+    }
   });
 }
 
