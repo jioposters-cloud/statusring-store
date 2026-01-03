@@ -1,11 +1,26 @@
-// Checkout functionality with WhatsApp & Razorpay
+// Checkout functionality with WhatsApp & Razorpay - with Customer Details
 
 // Get cart from localStorage
 function getCart() {
   return JSON.parse(localStorage.getItem('cart')) || [];
 }
 
-// WhatsApp Checkout
+// Get customer details using prompts
+function getCustomerDetails() {
+  const customerName = prompt('Enter your name:', '') || 'Guest Customer';
+  const customerEmail = prompt('Enter your email:', '') || 'noemail@example.com';
+  const customerPhone = prompt('Enter your phone number:', '') || '9000000000';
+  const customerAddress = prompt('Enter your delivery address:', '') || 'Not provided';
+  
+  return {
+    name: customerName,
+    email: customerEmail,
+    phone: customerPhone,
+    address: customerAddress
+  };
+}
+
+// WhatsApp Checkout - with customer details
 const checkoutWhatsAppBtn = document.getElementById('checkoutWhatsApp');
 if (checkoutWhatsAppBtn) {
   checkoutWhatsAppBtn.addEventListener('click', () => {
@@ -16,6 +31,9 @@ if (checkoutWhatsAppBtn) {
       return;
     }
     
+    // Get customer details
+    const customer = getCustomerDetails();
+    
     const phoneNumber = '919714293282';
     let message = 'Hello StatusRing, I would like to order:%0A%0A';
     
@@ -24,14 +42,28 @@ if (checkoutWhatsAppBtn) {
     });
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `%0A*Total Amount: ₹${total}*`;
+    message += `%0A*Total Amount: ₹${total}*%0A%0A*Customer Details:*%0AName: ${customer.name}%0AEmail: ${customer.email}%0APhone: ${customer.phone}%0AAddress: ${customer.address}`;
+    
+    // Store order details
+    const order = {
+      orderId: 'order_' + Date.now(),
+      customer: customer,
+      items: cart,
+      total: total,
+      paymentMethod: 'WhatsApp',
+      timestamp: new Date().toLocaleString()
+    };
+    localStorage.setItem('lastOrder', JSON.stringify(order));
+    
+    // Log to console for record
+    console.log('ORDER DETAILS:', order);
     
     const whatsappURL = `https://wa.me/${phoneNumber}?text=${message}`;
     window.open(whatsappURL, '_blank');
   });
 }
 
-// Razorpay Checkout - Without Order ID (for static sites)
+// Razorpay Checkout - with customer details
 const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
 if (checkoutRazorpayBtn) {
   checkoutRazorpayBtn.addEventListener('click', () => {
@@ -42,10 +74,10 @@ if (checkoutRazorpayBtn) {
       return;
     }
     
-    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    // Get customer details BEFORE opening payment
+    const customer = getCustomerDetails();
     
-    // Generate a unique reference ID
-    const referenceId = 'ref_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     const options = {
       key: 'rzp_live_RycGGdBVVqAFT9',
@@ -54,24 +86,18 @@ if (checkoutRazorpayBtn) {
       name: 'StatusRing Store',
       description: 'Buy Premium Dental & Medical Education Posters',
       handler: function(response) {
-        processPayment(response, cart);
+        processPayment(response, cart, customer);
       },
       prefill: {
-        name: '',
-        email: '',
-        contact: ''
+        name: customer.name,
+        email: customer.email,
+        contact: customer.phone
       },
       theme: {
         color: '#1abc9c'
-      },
-      modal: {
-        ondismiss: function() {
-          console.log('Checkout closed');
-        }
       }
     };
     
-    // Create and open Razorpay instance
     try {
       const rzp1 = new Razorpay(options);
       
@@ -81,55 +107,74 @@ if (checkoutRazorpayBtn) {
       
       rzp1.open();
     } catch (error) {
-      alert('Payment initialization error: ' + error.message);
+      alert('Payment Error: ' + error.message);
       console.error('Razorpay Error:', error);
     }
   });
 }
 
-function processPayment(response, cart) {
+function processPayment(response, cart, customer) {
   const paymentDetails = {
+    orderId: 'order_' + Date.now(),
+    customer: customer,
     items: cart,
     total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
     paymentId: response.razorpay_payment_id,
+    paymentMethod: 'Razorpay',
     timestamp: new Date().toLocaleString()
   };
   
-  // Save payment details
-  localStorage.setItem('lastPayment', JSON.stringify(paymentDetails));
+  // Save order details to localStorage
+  localStorage.setItem('lastOrder', JSON.stringify(paymentDetails));
+  localStorage.setItem('orderHistory', JSON.stringify([
+    ...(JSON.parse(localStorage.getItem('orderHistory')) || []),
+    paymentDetails
+  ]));
+  
+  // Log complete order details to console (visible in browser console - F12)
+  console.log('\n===== COMPLETE ORDER DETAILS =====');
+  console.log('Order ID:', paymentDetails.orderId);
+  console.log('Customer Name:', paymentDetails.customer.name);
+  console.log('Customer Email:', paymentDetails.customer.email);
+  console.log('Customer Phone:', paymentDetails.customer.phone);
+  console.log('Customer Address:', paymentDetails.customer.address);
+  console.log('Items:', paymentDetails.items);
+  console.log('Total Amount:', paymentDetails.total);
+  console.log('Payment ID:', paymentDetails.paymentId);
+  console.log('Timestamp:', paymentDetails.timestamp);
+  console.log('Full Details:', paymentDetails);
+  console.log('===================================\n');
   
   // Clear cart
   localStorage.setItem('cart', JSON.stringify([]));
   
-  // Update cart UI by reloading
+  // Update UI
   if (window.updateCartUI) {
     window.updateCartUI();
   }
   
-  // Close cart sidebar
+  // Close cart
   const cartSidebar = document.getElementById('cartSidebar');
   const cartOverlay = document.getElementById('cartOverlay');
   if (cartSidebar) cartSidebar.classList.remove('open');
   if (cartOverlay) cartOverlay.classList.remove('open');
   
-  // Show success message
+  // Show success notification
   const notification = document.createElement('div');
-  notification.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3000; text-align: center; max-width: 400px;';
+  notification.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3000; text-align: left; max-width: 500px; font-family: Arial, sans-serif;';
   notification.innerHTML = `
     <h2 style="color: #1abc9c; margin-bottom: 15px;">Payment Successful!</h2>
-    <p style="margin-bottom: 20px; color: #666;">Thank you for your order.</p>
-    <p style="font-size: 14px; color: #999;">Payment ID: ${response.razorpay_payment_id}</p>
-    <button onclick="this.parentElement.remove()" style="background: #1abc9c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">Close</button>
+    <p style="margin-bottom: 10px; color: #666;">Thank you for your order.</p>
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px; font-size: 13px;">
+      <p style="margin: 5px 0;"><strong>Order ID:</strong> ${paymentDetails.orderId}</p>
+      <p style="margin: 5px 0;"><strong>Name:</strong> ${paymentDetails.customer.name}</p>
+      <p style="margin: 5px 0;"><strong>Email:</strong> ${paymentDetails.customer.email}</p>
+      <p style="margin: 5px 0;"><strong>Phone:</strong> ${paymentDetails.customer.phone}</p>
+      <p style="margin: 5px 0;"><strong>Total:</strong> ₹${paymentDetails.total}</p>
+      <p style="margin: 5px 0;"><strong>Payment ID:</strong> ${response.razorpay_payment_id}</p>
+    </div>
+    <p style="margin-bottom: 15px; font-size: 12px; color: #999;">Check browser console (F12) for complete order details</p>
+    <button onclick="this.parentElement.remove()" style="background: #1abc9c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">Close</button>
   `;
   document.body.appendChild(notification);
-  
-  // Optional: Send confirmation via email/API
-  sendOrderConfirmation(paymentDetails);
-}
-
-function sendOrderConfirmation(details) {
-  // This is a placeholder - integrate with your backend API
-  console.log('Order confirmed:', details);
-  // You can send this data to your backend server
-  // fetch('your-backend-url/confirm-order', { method: 'POST', body: JSON.stringify(details) })
 }
