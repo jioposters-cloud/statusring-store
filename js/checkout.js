@@ -240,3 +240,53 @@ function sendOrderEmail(paymentDetails) {
   })
   .catch(error => console.error('Error sending customer email:', error));
 }
+
+
+// Function to get all orders from localStorage
+function getAllOrders() {
+  return JSON.parse(localStorage.getItem('orderHistory')) || [];
+}
+
+// Function to clear all orders (use only when needed)
+function clearAllOrders() {
+  localStorage.removeItem('orderHistory');
+  console.log('All orders cleared');
+}
+
+// Display all orders in console (for testing)
+function showAllOrders() {
+  const orders = getAllOrders();
+  console.clear();
+  console.log('========================================');
+  console.log('ALL STATUSRING ORDERS');
+  console.log('========================================');
+  console.log(`Total Orders: ${orders.length}`);
+  console.log('');
+  
+  if (orders.length === 0) {
+    console.log('No orders yet.');
+  } else {
+    orders.forEach((order, index) => {
+      console.log(`\n--- Order ${index + 1} ---`);
+      console.log(`Order ID: ${order.orderId}`);
+      console.log(`Customer: ${order.customer.name}`);
+      console.log(`Email: ${order.customer.email}`);
+      console.log(`Phone: ${order.customer.phone}`);
+      console.log(`Address: ${order.customer.address}`);
+      console.log(`Payment ID: ${order.paymentId}`);
+      console.log(`Amount: ₹${order.total}`);
+      console.log(`Items: ${JSON.stringify(order.items, null, 2)}`);
+      console.log(`Timestamp: ${order.timestamp}`);
+      console.log(`Status: PAID`);
+    });
+  }
+  console.log('');
+  console.log('========================================');
+  console.log('Type showAllOrders() to refresh this view');
+  console.log('========================================');
+}
+
+// Auto-show orders when page loads (for admin)
+if (window.location.pathname.includes('admin') || window.location.hash === '#admin') {
+  window.addEventListener('load', showAllOrders);
+}
