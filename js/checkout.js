@@ -144,6 +144,9 @@ function processPayment(response, cart, customer) {
   console.log('Timestamp:', paymentDetails.timestamp);
   console.log('Full Details:', paymentDetails);
   console.log('===================================\n');
+
+   // Send email notification to owner and customer
+  sendOrderEmail(paymentDetails);
   
   // Clear cart
   localStorage.setItem('cart', JSON.stringify([]));
@@ -177,4 +180,63 @@ function processPayment(response, cart, customer) {
     <button onclick="this.parentElement.remove()" style="background: #1abc9c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">Close</button>
   `;
   document.body.appendChild(notification);
+}
+
+
+// Send email notification using Formspree (FREE service)
+function sendOrderEmail(paymentDetails) {
+  // Email configuration
+  const ownerEmail = 'ankit.patel@statusring.in'; // CHANGE THIS TO YOUR EMAIL
+  const formspreeId = 'mzozzbjn'; // We will set this up
+  
+  const emailData = {
+    _subject: `New Order from ${paymentDetails.customer.name} - Order ID: ${paymentDetails.orderId}`,
+    _replyto: paymentDetails.customer.email,
+    orderid: paymentDetails.orderId,
+    customername: paymentDetails.customer.name,
+    customeremail: paymentDetails.customer.email,
+    customerphone: paymentDetails.customer.phone,
+    customeraddress: paymentDetails.customer.address,
+    paymentid: paymentDetails.paymentId,
+    amount: paymentDetails.total,
+    items: JSON.stringify(paymentDetails.items, null, 2),
+    timestamp: paymentDetails.timestamp,
+    message: `New order received!\n\nCustomer: ${paymentDetails.customer.name}\nEmail: ${paymentDetails.customer.email}\nPhone: ${paymentDetails.customer.phone}\nAddress: ${paymentDetails.customer.address}\n\nOrder ID: ${paymentDetails.orderId}\nPayment ID: ${paymentDetails.paymentId}\nAmount: ₹${paymentDetails.total}\n\nItems:\n${JSON.stringify(paymentDetails.items, null, 2)}\n\nTimestamp: ${paymentDetails.timestamp}`
+  };
+  
+  // Send email to yourself via Formspree
+  fetch('https://formspree.io/f/mzozzbjn', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(emailData)
+  })
+  .then(response => {
+    if (response.ok) {
+      console.log('Email notification sent to owner successfully!');
+    } else {
+      console.error('Failed to send email notification to owner');
+    }
+  })
+  .catch(error => console.error('Error sending email:', error));
+  
+  // OPTIONAL: Send confirmation email to customer
+  const customerEmailData = {
+    _subject: 'Order Confirmation - StatusRing Store',
+    _replyto: ownerEmail,
+    customername: paymentDetails.customer.name,
+    message: `Thank you for your order!\n\nOrder ID: ${paymentDetails.orderId}\nTotal Amount: ₹${paymentDetails.total}\n\nWe will process your order shortly and contact you at ${paymentDetails.customer.phone}.\n\nThank you for shopping with StatusRing!`
+  };
+  
+  // Send confirmation to customer
+  fetch('https://formspree.io/f/mzozzbjn', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...customerEmailData, email: paymentDetails.customer.email })
+  })
+  .then(response => {
+    if (response.ok) {
+      console.log('Confirmation email sent to customer!');
+    }
+  })
+  .catch(error => console.error('Error sending customer email:', error));
 }
