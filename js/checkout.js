@@ -186,7 +186,7 @@ function processPayment(response, cart, customer) {
 // Send email notification using Formspree (FREE service)
 function sendOrderEmail(paymentDetails) {
   // Email configuration
-  const ownerEmail = 'ankit.patel@statusring.in'; // CHANGE THIS TO YOUR EMAIL
+  const ownerEmail = 'jioposters@gmail.com'; // CHANGE THIS TO YOUR EMAIL
   const formspreeId = 'mzozzbjn'; // We will set this up
   
   const emailData = {
