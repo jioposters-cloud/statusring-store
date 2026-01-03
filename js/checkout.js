@@ -290,3 +290,86 @@ function showAllOrders() {
 if (window.location.pathname.includes('admin') || window.location.hash === '#admin') {
   window.addEventListener('load', showAllOrders);
 }
+
+
+// ====== GOOGLE SHEETS INTEGRATION ======
+// Submit orders to Google Sheet via Google Forms (bypasses API)
+function submitOrderToGoogleSheet(paymentDetails) {
+  // IMPORTANT: Replace with your Google Form URL
+  // How to set up:
+  // 1. Create a Google Form with these fields: OrderID, CustomerName, Email, Phone, Address, PaymentID, Items, Amount, Timestamp
+  // 2. Copy the form ID from the URL
+  // 3. View the form's source code to get field IDs
+  // 4. Replace FORM_ID, FIELD_IDS below
+  
+  const FORM_URL = 'https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/formResponse';
+  
+  // Field mappings (from Google Form - replace these with your actual field IDs)
+  const fields = {
+    'entry.123456789': paymentDetails.orderId,  // Order ID
+    'entry.987654321': paymentDetails.customer.name,  // Customer Name
+    'entry.111111111': paymentDetails.customer.email,  // Email
+    'entry.222222222': paymentDetails.customer.phone,  // Phone
+    'entry.333333333': paymentDetails.customer.address,  // Address
+    'entry.444444444': paymentDetails.paymentId,  // Payment ID
+    'entry.555555555': JSON.stringify(paymentDetails.items),  // Items
+    'entry.666666666': paymentDetails.total,  // Amount
+    'entry.777777777': paymentDetails.timestamp  // Timestamp
+  };
+  
+  // Create FormData
+  const formData = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    formData.append(key, value);
+  }
+  
+  // Submit to Google Form
+  fetch(FORM_URL, {
+    method: 'POST',
+    body: formData
+  })
+  .then(() => {
+    console.log('✅ Order submitted to Google Sheet successfully!');
+  })
+  .catch(error => {
+    console.error('❌ Error submitting to Google Sheet:', error);
+  });
+}
+
+// Function to setup Google Sheets integration
+function setupGoogleSheetsIntegration() {
+  console.log('%c📊 Google Sheets Integration', 'color: green; font-size: 16px; font-weight: bold');
+  console.log('%cSTEP 1: Create a Google Form', 'color: blue; font-weight: bold');
+  console.log('- Go to https://forms.google.com');
+  console.log('- Create a new form titled "StatusRing Orders"');
+  console.log('\nSTEP 2: Add these fields to the form:');
+  console.log('1. Order ID (Short answer)');
+  console.log('2. Customer Name (Short answer)');
+  console.log('3. Email (Short answer)');
+  console.log('4. Phone (Short answer)');
+  console.log('5. Address (Long answer)');
+  console.log('6. Payment ID (Short answer)');
+  console.log('7. Items (Short answer)');
+  console.log('8. Amount (Short answer)');
+  console.log('9. Timestamp (Short answer)');
+  console.log('\nSTEP 3: Link form to Sheet');
+  console.log('- In Form settings, click "Responses"');
+  console.log('- Click green "Create Spreadsheet" button');
+  console.log('- This creates a Google Sheet with your data');
+  console.log('\nSTEP 4: Get Form ID & Field IDs');
+  console.log('- Form ID: In URL - forms.google.com/...d/e/[FORM_ID]/viewform');
+  console.log('- Field IDs: Right-click form > Inspect > Look for entry.XXXXXXXXX in form inputs');
+  console.log('\nSTEP 5: Update checkout.js');
+  console.log('- Replace FORM_URL and field entry IDs in submitOrderToGoogleSheet() function');
+  console.log('\nSTEP 6: Enable email notifications in Google Apps Script');
+  console.log('- In your Google Sheet, click Tools > Script Editor');
+  console.log('- Paste the script provided at end of this file');
+  console.log('- Run it to enable email notifications');
+}
+
+// Call this once to see setup instructions
+window.addEventListener('load', () => {
+  if (window.location.hash === '#setup') {
+    setupGoogleSheetsIntegration();
+  }
+});
