@@ -233,11 +233,6 @@
 
 /* Keep buttons fixed at bottom of cart */
 .cart-buttons-container {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 660px !important;
-    right: 0 !important;
-    width: calc(100vw - 660px) !important;
-    z-index: 1000 !important;
+    margin-top: auto !important;
 }
 }
