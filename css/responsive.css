@@ -206,5 +206,4 @@
 
 /* Hide cart total when using fixed buttons */
 .cart-total {
-  margin-bottom: 100px;
-}
+    margin-bottom: 8px;}
