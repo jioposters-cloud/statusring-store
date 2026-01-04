@@ -52,12 +52,17 @@ if (checkoutRazorpayBtn) {
     // ========== IMPORTANT: RAZORPAY METADATA ==========
     // This sends all order info to Razorpay
     // Razorpay will email this + Zapier will forward it
-    const orderMetadata = {
+const orderMetadata = {
+      // PRODUCTS LIST
+      products: cart.map((item, idx) => `Product ${idx + 1}: ${item.name} (Qty: ${item.quantity}) - Price: Rs.${item.price * item.quantity}\nImage: ${item.image || 'No image'}`).join('\n\n'),
+      
+      // CUSTOMER DETAILS
       customerName: customer.name,
+      customerAddress: customer.address,
       customerEmail: customer.email,
       customerPhone: customer.phone,
-      customerAddress: customer.address,
-      cartItems: JSON.stringify(cart),
+      
+      // ORDER INFO
       orderTotal: total,
       itemCount: cart.length,
       orderTimestamp: new Date().toISOString()
