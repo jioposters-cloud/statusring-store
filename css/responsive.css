@@ -145,6 +145,34 @@
   z-index: 999;
 }
 
+/* Optimized cart buttons for very small screens */
+@media (max-width: 380px) {
+    .cart-buttons-container {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+    
+    #checkoutWhatsApp,
+    #checkoutRazorpay {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+}
+
+/* Further optimize for ultra-small devices */
+@media (max-height: 600px) and (max-width: 480px) {
+    .cart-buttons-container {
+        padding: 8px 10px;
+        gap: 4px;
+    }
+    
+    #checkoutWhatsApp,
+    #checkoutRazorpay {
+        padding: 8px 10px;
+        font-size: 11px;
+    }
+}
+
 #checkoutWhatsApp,
 #checkoutRazorpay {
   /* Ensure buttons are fully visible */
