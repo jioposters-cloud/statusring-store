@@ -235,4 +235,172 @@
 .cart-buttons-container {
     margin-top: auto !important;
 }
+
+/* ===== PROFESSIONAL UX/UI ENHANCEMENTS ===== */
+
+/* Scrollable cart items container */
+.shopping-cart-items {
+    max-height: calc(100vh - 450px) !important;
+    overflow-y: auto !important;
+    flex: 1 !important;
+    padding-right: 8px;
+}
+
+.shopping-cart-items::-webkit-scrollbar {
+    width: 6px;
+}
+
+.shopping-cart-items::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.shopping-cart-items::-webkit-scrollbar-thumb {
+    background: #20b2a4;
+    border-radius: 3px;
+}
+
+/* Enhanced button interactions */
+#checkoutWhatsApp,
+#checkoutRazorpay {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+#checkoutWhatsApp:hover,
+#checkoutRazorpay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+#checkoutWhatsApp:active,
+#checkoutRazorpay:active {
+    transform: scale(0.98) !important;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Cart item styling improvements */
+.cart-item {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 12px 0;
+    transition: background 0.2s ease;
+}
+
+.cart-item:hover {
+    background: #fafafa;
+}
+
+/* Quantity adjustment styling */
+.qty-adjuster {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: white;
+}
+
+.qty-btn {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #f5f5f5;
+    cursor: pointer;
+    font-weight: 600;
+    border-radius: 3px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.qty-btn:hover {
+    background: #20b2a4;
+    color: white;
+}
+
+.qty-btn:active {
+    transform: scale(0.95);
+}
+
+/* Remove button enhancement */
+.remove-btn {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+    border-radius: 4px !important;
+    transition: all 0.2s !important;
+}
+
+.remove-btn:hover {
+    background: #ff6b6b !important;
+    transform: scale(1.05);
+}
+
+/* Cart total styling */
+.cart-total-section {
+    border-top: 2px solid #f0f0f0;
+    padding-top: 12px;
+    margin-top: 12px;
+}
+
+.cart-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.total-amount {
+    color: #20b2a4;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Trust signals */
+.trust-badges {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 0;
+    font-size: 11px;
+    color: #666;
+    text-align: center;
+}
+
+.trust-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.trust-icon {
+    font-size: 14px;
+}
+
+/* Improved button accessibility */
+#checkoutWhatsApp,
+#checkoutRazorpay {
+    min-height: 48px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* Cart header sticky */
+.shopping-cart-header {
+    position: sticky;
+    top: 0;
+    background: #20b2a4;
+    z-index: 10;
+    padding: 16px;
+    margin: -16px -16px 16px -16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Loading state for buttons */
+.btn-loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
 }
