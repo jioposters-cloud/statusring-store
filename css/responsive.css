@@ -206,3 +206,15 @@
 /* Hide cart total when using fixed buttons */
 .cart-total {
     margin-bottom: 8px;}
+
+/* Ensure shopping cart sidebar extends to bottom without gaps */
+.shopping-cart {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+}
+
+.shopping-cart > div:last-child {
+    margin-top: auto;
+}
