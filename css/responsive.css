@@ -218,3 +218,16 @@
 .shopping-cart > div:last-child {
     margin-top: auto;
 }
+
+/* Reduce cart buttons spacing for compact layout */
+#checkoutWhatsApp,
+#checkoutRazorpay {
+    padding: 12px 16px !important;
+    gap: 0 !important;
+    margin: 0 !important;
+}
+
+.cart-buttons-container {
+    padding: 8px 16px !important;
+    gap: 4px !important;
+}
