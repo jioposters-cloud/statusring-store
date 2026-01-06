@@ -1,7 +1,7 @@
 // ===== CHECKOUT FORM JAVASCRIPT =====
 let currentStep = 1, cart = [], customerDetails = {};
 const RAZORPAY_KEY = 'rzp_live_RycGGdBVVqAFT9';
-const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID';
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mdakrrab';
 
 window.addEventListener('DOMContentLoaded', () => { loadCart(); prefillForm(); renderCartReview(); renderOrderSummary(); });
 
