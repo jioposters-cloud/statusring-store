@@ -143,6 +143,10 @@ function processPayment(response, cart, customer, total) {
   console.log('Payment ID:', paymentDetails.paymentId);
   console.log('Timestamp:', paymentDetails.timestamp);
   console.log('Full Details:', paymentDetails);
+
+   // SEND ORDER TO FORMSPREE FOR EMAIL NOTIFICATION
+ sendEmailViaFormspree(paymentDetails, response);
+
   console.log('===================================\n');
   
   // NOTE: Formspree email removed - Zapier will handle it automatically
@@ -184,6 +188,19 @@ function showSuccessNotification(paymentDetails, response) {
     <button onclick="this.parentElement.remove()" style="background: #1abc9c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%;">Close</button>
   `;
   document.body.appendChild(notification);
+}
+
+// SEND ORDER TO FORMSPREE (FIX FOR RAZORPAY AUTO-REFUND)
+function sendEmailViaFormspree(paymentDetails, response) {
+ const body = `Order Confirmation\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${paymentDetails.orderId}\nName: ${paymentDetails.customer.name}\nEmail: ${paymentDetails.customer.email}\nPhone: ${paymentDetails.customer.phone}\nAddress: ${paymentDetails.customer.address}\nTotal: ₹${paymentDetails.total}\n\nItems: ${JSON.stringify(paymentDetails.items)}`;
+ 
+ fetch('https://formspree.io/f/mdakrrab', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ email: paymentDetails.customer.email, name: paymentDetails.customer.name, message: body })
+ })
+ .then(() => console.log('✅ Formspree email sent to vendor'))
+ .catch(e => console.error('❌ Formspree email failed:', e));
 }
 
 // 6. GET ALL ORDERS FROM STORAGE (for admin viewing)
