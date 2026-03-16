@@ -32,6 +32,7 @@ if (checkoutModalOverlay) checkoutModalOverlay.addEventListener('click', closeMo
 
 if (checkoutRazorpayBtn) {
   checkoutRazorpayBtn.addEventListener('click', () => {
+    console.log("Pay with Razorpay clicked!");
     const cart = getCart();
     
     if (cart.length === 0) {
@@ -46,6 +47,12 @@ if (checkoutRazorpayBtn) {
         document.getElementById('checkoutPhone').value = localStorage.getItem('customerPhone') || '';
         document.getElementById('checkoutAddress').value = localStorage.getItem('customerAddress') || '';
     }
+
+    // Close the cart sidebar to clearly show the modal
+    const cartSidebar = document.getElementById('cartSidebar');
+    const cartOverlay = document.getElementById('cartOverlay');
+    if (cartSidebar) cartSidebar.classList.remove('open');
+    if (cartOverlay) cartOverlay.classList.remove('open');
 
     // Show modal instead of prompting
     if (checkoutModal) checkoutModal.classList.add('show');
