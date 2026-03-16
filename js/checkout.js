@@ -17,71 +17,75 @@ function getCustomerDetails() {
 }
 
 // 3. RAZORPAY CHECKOUT WITH METADATA (CRITICAL - SENDS ALL ORDER DATA)
-const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
-const checkoutModal = document.getElementById('checkoutModal');
-const closeCheckoutModal = document.getElementById('closeCheckoutModal');
-const checkoutModalOverlay = document.getElementById('checkoutModalOverlay');
-const checkoutForm = document.getElementById('checkoutForm');
+document.addEventListener('DOMContentLoaded', () => {
+  const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
+  const checkoutModal = document.getElementById('checkoutModal');
+  const closeCheckoutModal = document.getElementById('closeCheckoutModal');
+  const checkoutModalOverlay = document.getElementById('checkoutModalOverlay');
+  const checkoutForm = document.getElementById('checkoutForm');
 
-// Close modal handlers
-const closeModal = () => {
-    if (checkoutModal) checkoutModal.classList.remove('show');
-};
-if (closeCheckoutModal) closeCheckoutModal.addEventListener('click', closeModal);
-if (checkoutModalOverlay) checkoutModalOverlay.addEventListener('click', closeModal);
+  // Close modal handlers
+  const closeModal = () => {
+      if (checkoutModal) checkoutModal.classList.remove('show');
+  };
+  if (closeCheckoutModal) closeCheckoutModal.addEventListener('click', closeModal);
+  if (checkoutModalOverlay) checkoutModalOverlay.addEventListener('click', closeModal);
 
-if (checkoutRazorpayBtn) {
-  checkoutRazorpayBtn.addEventListener('click', () => {
-    console.log("Pay with Razorpay clicked!");
-    const cart = getCart();
-    
-    if (cart.length === 0) {
-      alert('Your cart is empty!');
-      return;
+  // Use event delegation on the body for reliable clicks
+  document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('#checkoutRazorpay');
+    if (btn) {
+      console.log("Pay with Razorpay clicked!");
+      const cart = getCart();
+      
+      if (cart.length === 0) {
+        alert('Your cart is empty!');
+        return;
+      }
+
+      // Prefill form if data exists
+      if (document.getElementById('checkoutName')) {
+          document.getElementById('checkoutName').value = localStorage.getItem('customerName') || '';
+          document.getElementById('checkoutEmail').value = localStorage.getItem('customerEmail') || '';
+          document.getElementById('checkoutPhone').value = localStorage.getItem('customerPhone') || '';
+          document.getElementById('checkoutAddress').value = localStorage.getItem('customerAddress') || '';
+      }
+
+      // Close the cart sidebar to clearly show the modal
+      const cartSidebar = document.getElementById('cartSidebar');
+      const cartOverlay = document.getElementById('cartOverlay');
+      if (cartSidebar) cartSidebar.classList.remove('open');
+      if (cartOverlay) cartOverlay.classList.remove('open');
+
+      // Show modal instead of prompting
+      if (checkoutModal) checkoutModal.classList.add('show');
     }
-
-    // Prefill form if data exists
-    if (document.getElementById('checkoutName')) {
-        document.getElementById('checkoutName').value = localStorage.getItem('customerName') || '';
-        document.getElementById('checkoutEmail').value = localStorage.getItem('customerEmail') || '';
-        document.getElementById('checkoutPhone').value = localStorage.getItem('customerPhone') || '';
-        document.getElementById('checkoutAddress').value = localStorage.getItem('customerAddress') || '';
-    }
-
-    // Close the cart sidebar to clearly show the modal
-    const cartSidebar = document.getElementById('cartSidebar');
-    const cartOverlay = document.getElementById('cartOverlay');
-    if (cartSidebar) cartSidebar.classList.remove('open');
-    if (cartOverlay) cartOverlay.classList.remove('open');
-
-    // Show modal instead of prompting
-    if (checkoutModal) checkoutModal.classList.add('show');
   });
-}
 
-// Handle form submission
-if (checkoutForm) {
-    checkoutForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        // Save form data to localStorage
-        const customerName = document.getElementById('checkoutName').value;
-        const customerEmail = document.getElementById('checkoutEmail').value;
-        const customerPhone = document.getElementById('checkoutPhone').value;
-        const customerAddress = document.getElementById('checkoutAddress').value;
+  // Handle form submission
+  if (checkoutForm) {
+      checkoutForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          
+          // Save form data to localStorage
+          const customerName = document.getElementById('checkoutName').value;
+          const customerEmail = document.getElementById('checkoutEmail').value;
+          const customerPhone = document.getElementById('checkoutPhone').value;
+          const customerAddress = document.getElementById('checkoutAddress').value;
 
-        localStorage.setItem('customerName', customerName);
-        localStorage.setItem('customerEmail', customerEmail);
-        localStorage.setItem('customerPhone', customerPhone);
-        localStorage.setItem('customerAddress', customerAddress);
-        
-        // Hide modal
-        closeModal();
+          localStorage.setItem('customerName', customerName);
+          localStorage.setItem('customerEmail', customerEmail);
+          localStorage.setItem('customerPhone', customerPhone);
+          localStorage.setItem('customerAddress', customerAddress);
+          
+          // Hide modal
+          closeModal();
 
-        // Proceed to Razorpay
-        triggerRazorpayPayment();
-    });
-}
+          // Proceed to Razorpay
+          triggerRazorpayPayment();
+      });
+  }
+});
 
 function triggerRazorpayPayment() {
     const cart = getCart();
