@@ -496,7 +496,7 @@ body {
   border-radius: 4px;
   cursor: pointer;
   font-weight: 600;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
   transition: all 0.3s ease;
   font-size: 14px;
 }
@@ -701,6 +701,7 @@ body {
   cursor: pointer;
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(255, 81, 47, 0.2);
+  margin-top: 10px;
 }
 
 .btn-add-to-cart:hover {
