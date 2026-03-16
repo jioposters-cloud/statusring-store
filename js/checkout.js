@@ -6,36 +6,30 @@ function getCart() {
   return JSON.parse(localStorage.getItem('cart')) || [];
 }
 
-// 2. GET CUSTOMER DETAILS WITH AUTO-PREFILL (NO ADDITIONAL PROMPTS)
+// 2. GET CUSTOMER DETAILS (WITH AUTO-PREFILL FROM LOCAL STORAGE)
 function getCustomerDetails() {
-  // Try to get saved details from localStorage (from previous orders)
-  const savedName = localStorage.getItem('customerName');
-  const savedEmail = localStorage.getItem('customerEmail');
-  const savedPhone = localStorage.getItem('customerPhone');
-  const savedAddress = localStorage.getItem('customerAddress');
-  
-  // Use saved values if available, otherwise ask once
-  const customerName = prompt('Enter your name:', savedName || '') || 'Guest';
-  const customerEmail = prompt('Enter your email:', savedEmail || '') || 'noemail@example.com';
-  const customerPhone = prompt('Enter your phone:', savedPhone || '') || '9000000000';
-  const customerAddress = prompt('Enter delivery address:', savedAddress || '') || 'Not provided';
-  
-  // AUTO-SAVE for next time (prefill next order automatically)
-  localStorage.setItem('customerName', customerName);
-  localStorage.setItem('customerEmail', customerEmail);
-  localStorage.setItem('customerPhone', customerPhone);
-  localStorage.setItem('customerAddress', customerAddress);
-  
   return {
-    name: customerName,
-    email: customerEmail,
-    phone: customerPhone,
-    address: customerAddress
+    name: localStorage.getItem('customerName') || 'Guest',
+    email: localStorage.getItem('customerEmail') || 'noemail@example.com',
+    phone: localStorage.getItem('customerPhone') || '9000000000',
+    address: localStorage.getItem('customerAddress') || 'Not provided'
   };
 }
 
 // 3. RAZORPAY CHECKOUT WITH METADATA (CRITICAL - SENDS ALL ORDER DATA)
 const checkoutRazorpayBtn = document.getElementById('checkoutRazorpay');
+const checkoutModal = document.getElementById('checkoutModal');
+const closeCheckoutModal = document.getElementById('closeCheckoutModal');
+const checkoutModalOverlay = document.getElementById('checkoutModalOverlay');
+const checkoutForm = document.getElementById('checkoutForm');
+
+// Close modal handlers
+const closeModal = () => {
+    if (checkoutModal) checkoutModal.classList.remove('show');
+};
+if (closeCheckoutModal) closeCheckoutModal.addEventListener('click', closeModal);
+if (checkoutModalOverlay) checkoutModalOverlay.addEventListener('click', closeModal);
+
 if (checkoutRazorpayBtn) {
   checkoutRazorpayBtn.addEventListener('click', () => {
     const cart = getCart();
@@ -44,72 +38,93 @@ if (checkoutRazorpayBtn) {
       alert('Your cart is empty!');
       return;
     }
-    
+
+    // Prefill form if data exists
+    if (document.getElementById('checkoutName')) {
+        document.getElementById('checkoutName').value = localStorage.getItem('customerName') || '';
+        document.getElementById('checkoutEmail').value = localStorage.getItem('customerEmail') || '';
+        document.getElementById('checkoutPhone').value = localStorage.getItem('customerPhone') || '';
+        document.getElementById('checkoutAddress').value = localStorage.getItem('customerAddress') || '';
+    }
+
+    // Show modal instead of prompting
+    if (checkoutModal) checkoutModal.classList.add('show');
+  });
+}
+
+// Handle form submission
+if (checkoutForm) {
+    checkoutForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        // Save form data to localStorage
+        const customerName = document.getElementById('checkoutName').value;
+        const customerEmail = document.getElementById('checkoutEmail').value;
+        const customerPhone = document.getElementById('checkoutPhone').value;
+        const customerAddress = document.getElementById('checkoutAddress').value;
+
+        localStorage.setItem('customerName', customerName);
+        localStorage.setItem('customerEmail', customerEmail);
+        localStorage.setItem('customerPhone', customerPhone);
+        localStorage.setItem('customerAddress', customerAddress);
+        
+        // Hide modal
+        closeModal();
+
+        // Proceed to Razorpay
+        triggerRazorpayPayment();
+    });
+}
+
+function triggerRazorpayPayment() {
+    const cart = getCart();
+    if (cart.length === 0) return;
+
     // Get customer details with prefill from previous order
     const customer = getCustomerDetails();
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     
     // ========== IMPORTANT: RAZORPAY METADATA ==========
-    // This sends all order info to Razorpay
-    // Razorpay will email this + Zapier will forward it
-const orderMetadata = {
-      // PRODUCTS LIST
+    const orderMetadata = {
       products: cart.map((item, idx) => `Product ${idx + 1}: ${item.name} (Qty: ${item.quantity}) - Price: Rs.${item.price * item.quantity}\nImage: ${item.image || 'No image'}`).join('\n\n'),
-      
-      // CUSTOMER DETAILS
       customerName: customer.name,
       customerAddress: customer.address,
       customerEmail: customer.email,
       customerPhone: customer.phone,
-      
-      // ORDER INFO
       orderTotal: total,
       itemCount: cart.length,
       orderTimestamp: new Date().toISOString()
     };
-    // ==================================================
     
     const options = {
-      key: 'rzp_live_RycGGdBVVqAFT9', // Your Razorpay key
+      key: 'rzp_live_RycGGdBVVqAFT9',
       amount: total * 100,
       currency: 'INR',
       name: 'StatusRing Store',
       description: 'Premium Dental & Medical Education Posters',
-      
-      // ========== NEW - METADATA WITH ALL ORDER INFO ==========
-      notes: orderMetadata, // ALL CART & CUSTOMER INFO GOES HERE
-      // =======================================================
-      
+      notes: orderMetadata,
       handler: function(response) {
         processPayment(response, cart, customer, total);
       },
-      
-      // Prefill Razorpay form with customer details
       prefill: {
         name: customer.name,
         email: customer.email,
         contact: customer.phone
       },
-      
-      theme: {
-        color: '#1abc9c'
-      }
+      theme: { color: '#FF512F' }
     };
     
     try {
       const rzp1 = new Razorpay(options);
-      
       rzp1.on('payment.failed', function(response) {
         alert('Payment Failed: ' + response.error.description);
         console.log('Failed Payment:', response);
       });
-      
       rzp1.open();
     } catch (error) {
       alert('Payment Error: ' + error.message);
       console.error('Razorpay Error:', error);
     }
-  });
 }
 
 // 4. PROCESS SUCCESSFUL PAYMENT
