@@ -393,7 +393,7 @@ body {
 }
 
 .cart-header {
-  background: #26a69a;
+  background: #FF512F;
   color: white;
   padding: 20px;
   display: flex;
@@ -455,9 +455,9 @@ body {
 }
 
 .cart-item-price {
-  color: #26a69a;
-  font-weight: 600;
-  font-size: 14px;
+  color: #FF512F;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .cart-item-quantity {
@@ -504,19 +504,25 @@ body {
 .btn-whatsapp {
   background: #25d366;
   color: white;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);
 }
 
 .btn-whatsapp:hover {
   background: #1ebd59;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(37, 211, 102, 0.3);
 }
 
 .btn-razorpay {
-  background: #1957a0;
+  background: #FF512F;
   color: white;
+  box-shadow: 0 4px 10px rgba(255, 81, 47, 0.2);
 }
 
 .btn-razorpay:hover {
-  background: #0f3d7a;
+  background: #e63e1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 81, 47, 0.3);
 }
 
 /* Cart Overlay */
@@ -641,9 +647,9 @@ body {
 }
 
 .detail-price {
-  font-size: 24px;
-  font-weight: bold;
-  color: #26a69a;
+  font-size: 26px;
+  font-weight: 800;
+  color: #FF512F;
   margin-bottom: 20px;
 }
 
@@ -685,19 +691,22 @@ body {
 
 .btn-add-to-cart {
   width: 100%;
-  padding: 12px;
-  background: #26a69a;
+  padding: 14px;
+  background: #FF512F;
   color: white;
   border: none;
-  border-radius: 4px;
-  font-size: 15px;
-  font-weight: 600;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(255, 81, 47, 0.2);
 }
 
 .btn-add-to-cart:hover {
-  background: #1a8a7e;
+  background: #e63e1c;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(255, 81, 47, 0.3);
 }
 
 @media (max-width: 768px) {
