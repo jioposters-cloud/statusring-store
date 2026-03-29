@@ -82,16 +82,28 @@ function proceedToPayment() {
 
 function handlePaymentSuccess(response, orderData) { 
   alert('Payment successful! ID: ' + response.razorpay_payment_id);
-  sendEmailViaFormspree(orderData, response.razorpay_payment_id);
+  sendOrderToGoogleAppScript({
+    orderId: 'order_' + Date.now(),
+    customer: { name: orderData.customerName, email: orderData.customerEmail, phone: orderData.customerPhone, address: orderData.customerAddress, city: orderData.customerCity },
+    items: JSON.parse(orderData.cartItems),
+    total: orderData.totalAmount,
+    paymentMethod: 'Razorpay',
+    paymentId: response.razorpay_payment_id
+  });
   localStorage.removeItem('cart');
   window.location.href = '/thank-you.html';
 }
 
-function sendEmailViaFormspree(orderData, paymentId) { 
-  const body = `Order Confirmation\nPayment ID: ${paymentId}\nName: ${orderData.customerName}\nEmail: ${orderData.customerEmail}\nPhone: ${orderData.customerPhone}\nAddress: ${orderData.customerAddress}, ${orderData.customerCity}\nTotal: ₹${orderData.totalAmount}`;
-  fetch(FORMSPREE_ENDPOINT, {
+function sendOrderToGoogleAppScript(paymentDetails) { 
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMjLTN6yMHb192iUWPeP8NOhmzVy3uCTqJ1fZazmRAz9Vv77nVj-hEtXc2oRJdgD2Q/exec';
+  
+  if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+    console.warn("⚠️ Google Apps Script URL not set");
+    return;
+  }
+  
+  fetch(SCRIPT_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: orderData.customerEmail, name: orderData.customerName, message: body })
-  }).then(() => console.log('Email sent')).catch(e => console.error('Email failed:', e));
+    body: JSON.stringify(paymentDetails)
+  }).then(res => res.json()).then(data => console.log('✅ Sent to sheet:', data)).catch(e => console.error('❌ Failed:', e));
 }
