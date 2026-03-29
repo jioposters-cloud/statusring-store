@@ -170,8 +170,8 @@ function processPayment(response, cart, customer, total) {
   console.log('Timestamp:', paymentDetails.timestamp);
   console.log('Full Details:', paymentDetails);
 
-   // SEND ORDER TO FORMSPREE FOR EMAIL NOTIFICATION
- sendEmailViaFormspree(paymentDetails, response);
+   // SEND ORDER TO GOOGLE SHEET
+  sendOrderToGoogleAppScript(paymentDetails, response);
 
   console.log('===================================\n');
   
@@ -216,17 +216,28 @@ function showSuccessNotification(paymentDetails, response) {
   document.body.appendChild(notification);
 }
 
-// SEND ORDER TO FORMSPREE (FIX FOR RAZORPAY AUTO-REFUND)
-function sendEmailViaFormspree(paymentDetails, response) {
- const body = `Order Confirmation\nPayment ID: ${response.razorpay_payment_id}\nOrder ID: ${paymentDetails.orderId}\nName: ${paymentDetails.customer.name}\nEmail: ${paymentDetails.customer.email}\nPhone: ${paymentDetails.customer.phone}\nAddress: ${paymentDetails.customer.address}\nTotal: ₹${paymentDetails.total}\n\nItems: ${JSON.stringify(paymentDetails.items)}`;
- 
- fetch('https://formspree.io/f/mdakrrab', {
- method: 'POST',
- headers: { 'Content-Type': 'application/json' },
- body: JSON.stringify({ email: paymentDetails.customer.email, name: paymentDetails.customer.name, message: body })
- })
- .then(() => console.log('✅ Formspree email sent to vendor'))
- .catch(e => console.error('❌ Formspree email failed:', e));
+// SEND ORDER TO GOOGLE SHEET & EMAIL VIA APPS SCRIPT
+function sendOrderToGoogleAppScript(paymentDetails, response) {
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMjLTN6yMHb192iUWPeP8NOhmzVy3uCTqJ1fZazmRAz9Vv77nVj-hEtXc2oRJdgD2Q/exec'; 
+  
+  if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
+    console.warn("⚠️ Google Apps Script URL not set. Data not sent to Sheet.");
+    return;
+  }
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(paymentDetails),
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.status === 'success') {
+      console.log('✅ Order successfully saved to Google Sheet & Email sent!');
+    } else {
+      console.error('❌ Error from Google Script:', data.message);
+    }
+  })
+  .catch(e => console.error('❌ Failed to send request to Google Script:', e));
 }
 
 // 6. GET ALL ORDERS FROM STORAGE (for admin viewing)
@@ -300,9 +311,12 @@ if (checkoutWhatsAppBtn) {
       items: cart,
       total: total,
       paymentMethod: 'WhatsApp',
-      timestamp: new Date().toLocaleString()
+      timestamp: new Date().toISOString()
     };
     localStorage.setItem('lastOrder', JSON.stringify(order));
+    
+    // Background sync to Google Sheet
+    sendOrderToGoogleAppScript(order, { razorpay_payment_id: "whatsapp" });
     
     console.log('ORDER DETAILS:', order);
     
