@@ -89,13 +89,14 @@ function displayProducts(products) {
     card.className = 'product-card';
     card.style.cursor = 'pointer';
     card.innerHTML = `
-      <div class="product-image">
+      <div class="product-image" style="position: relative;">
         <img src="${productImage}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/280x250?text=Product';">
+        <button class="card-share-btn" onclick="event.stopPropagation(); shareProduct(${p.id}, '${p.name.replace(/'/g, '&apos;').replace(/"/g, '&quot;')}')" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: #333;" title="Share"><i class="fas fa-share-alt"></i></button>
       </div>
       <div class="product-info">
         <h3 class="product-name">${p.name}</h3>
         <p class="product-seller">${sellerName}</p>
-        <div class="product-price">â‚¹${p.price}</div>
+        <div class="product-price">\u20B9${p.price}</div>
         <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
       </div>
     `;
@@ -144,7 +145,7 @@ function showProductDetail(product) {
     document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/400x400?text=Product';
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
-    document.getElementById('detailPrice').textContent = 'â‚¹' + product.price;
+    document.getElementById('detailPrice').textContent = '\u20B9' + product.price;
     document.getElementById('detailSize').textContent = product.size || 'N/A';
     document.getElementById('detailColor').textContent = product.color || 'N/A';
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
@@ -213,4 +214,23 @@ function initStore() {
   filteredProducts = [];
   categories = new Set();
   loadProducts();
+}
+
+async function shareProduct(productId, productName) {
+  const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + productId;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: productName,
+        text: 'Check out ' + productName + ' on StatusRing Store!',
+        url: shareUrl,
+      });
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  } else {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert('Link copied to clipboard!');
+    }).catch(err => console.error('Copy failed', err));
+  }
 }
