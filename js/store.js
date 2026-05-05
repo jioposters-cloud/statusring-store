@@ -19,6 +19,16 @@ function loadProducts() {
     console.log('Products loaded:', allProducts.length);
     displayCategories();
     displayProducts(allProducts);
+    
+    // Check for deep link
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = urlParams.get('product');
+    if (productId) {
+      const product = allProducts.find(p => p.id == productId);
+      if (product) {
+        setTimeout(() => showProductDetail(product), 100);
+      }
+    }
   } else {
     console.error('No products found');
   }
@@ -85,7 +95,7 @@ function displayProducts(products) {
       <div class="product-info">
         <h3 class="product-name">${p.name}</h3>
         <p class="product-seller">${sellerName}</p>
-        <div class="product-price">₹${p.price}</div>
+        <div class="product-price">â‚¹${p.price}</div>
         <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
       </div>
     `;
@@ -111,16 +121,30 @@ function searchProducts() {
   displayProducts(filteredProducts);
 }
 
+function closeProductModal() {
+  const modal = document.getElementById('productModal');
+  if (modal) modal.classList.remove('show');
+  document.body.style.overflow = 'auto';
+  
+  // Clear URL parameter for deep linking
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
+  window.history.pushState({path:newUrl}, '', newUrl);
+}
+
 function showProductDetail(product) {
   window.currentProduct = product;
   window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
+  
+  // Update URL for deep linking
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + product.id;
+  window.history.pushState({path:newUrl}, '', newUrl);
   
   const modal = document.getElementById('productModal');
   if (modal) {
     document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/400x400?text=Product';
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
-    document.getElementById('detailPrice').textContent = '₹' + product.price;
+    document.getElementById('detailPrice').textContent = 'â‚¹' + product.price;
     document.getElementById('detailSize').textContent = product.size || 'N/A';
     document.getElementById('detailColor').textContent = product.color || 'N/A';
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
@@ -131,8 +155,30 @@ function showProductDetail(product) {
     if (detailBtn) {
       detailBtn.onclick = () => {
         addToCart(product.id, product.name, product.price, product.thumbnail);
-        modal.classList.remove('show');
-        document.body.style.overflow = 'auto';
+        closeProductModal();
+      };
+    }
+    
+    // Set up share button
+    const shareBtn = document.getElementById('detailShareBtn');
+    if (shareBtn) {
+      shareBtn.onclick = async () => {
+        const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + product.id;
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: product.name,
+              text: 'Check out ' + product.name + ' on StatusRing Store!',
+              url: shareUrl,
+            });
+          } catch (err) {
+            console.error('Error sharing:', err);
+          }
+        } else {
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert('Link copied to clipboard!');
+          }).catch(err => console.error('Copy failed', err));
+        }
       };
     }
     
@@ -154,17 +200,11 @@ window.addEventListener('DOMContentLoaded', function() {
   const modal = document.getElementById('productModal');
   
   if (closeModal) {
-    closeModal.onclick = () => {
-      if (modal) modal.classList.remove('show');
-      document.body.style.overflow = 'auto';
-    };
+    closeModal.onclick = closeProductModal;
   }
   
   if (modalOverlay) {
-    modalOverlay.onclick = () => {
-      if (modal) modal.classList.remove('show');
-      document.body.style.overflow = 'auto';
-    };
+    modalOverlay.onclick = closeProductModal;
   }
 });
 
