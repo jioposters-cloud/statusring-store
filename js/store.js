@@ -4,6 +4,13 @@ let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
 
+// Function to generate SEO friendly slug
+function generateProductSlug(product) {
+  if (!product || !product.name) return product.id;
+  const nameSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  return product.id + '-' + nameSlug;
+}
+
 // Load products from data.js
 function loadProducts() {
   if (typeof products !== 'undefined' && products.length > 0) {
@@ -22,8 +29,9 @@ function loadProducts() {
     
     // Check for deep link
     const urlParams = new URLSearchParams(window.location.search);
-    const productId = urlParams.get('product');
-    if (productId) {
+    const productParam = urlParams.get('product');
+    if (productParam) {
+      const productId = parseInt(productParam);
       const product = allProducts.find(p => p.id == productId);
       if (product) {
         setTimeout(() => showProductDetail(product), 100);
@@ -127,6 +135,11 @@ function closeProductModal() {
   if (modal) modal.classList.remove('show');
   document.body.style.overflow = 'auto';
   
+  // Revert SEO changes
+  document.title = 'StatusRing Store | Premium Dental Posters & Clinic Frames';
+  const existingSchema = document.getElementById('product-json-ld');
+  if (existingSchema) existingSchema.remove();
+  
   // Clear URL parameter for deep linking
   const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
   window.history.pushState({path:newUrl}, '', newUrl);
@@ -136,9 +149,44 @@ function showProductDetail(product) {
   window.currentProduct = product;
   window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
   
+  const productSlug = generateProductSlug(product);
+  
   // Update URL for deep linking
-  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + product.id;
+  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + productSlug;
   window.history.pushState({path:newUrl}, '', newUrl);
+  
+  // Update SEO dynamically
+  document.title = product.name + ' - StatusRing Store';
+  
+  // Inject Product JSON-LD for AEO/SEO
+  let schemaScript = document.getElementById('product-json-ld');
+  if (!schemaScript) {
+    schemaScript = document.createElement('script');
+    schemaScript.id = 'product-json-ld';
+    schemaScript.type = 'application/ld+json';
+    document.head.appendChild(schemaScript);
+  }
+  
+  const productSchema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": product.thumbnail || "https://www.statusring.in/images/og-image.jpg",
+    "description": product.description || "Premium dental product",
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand || "Status Ring"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": newUrl,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "availability": "https://schema.org/InStock"
+    }
+  };
+  schemaScript.textContent = JSON.stringify(productSchema);
   
   const modal = document.getElementById('productModal');
   if (modal) {
@@ -217,7 +265,9 @@ function initStore() {
 }
 
 async function shareProduct(productId, productName) {
-  const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + productId;
+  const product = allProducts.find(p => p.id == productId);
+  const slug = product ? generateProductSlug(product) : productId;
+  const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + slug;
   if (navigator.share) {
     try {
       await navigator.share({
