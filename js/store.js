@@ -4,11 +4,144 @@ let allProducts = [];
 let filteredProducts = [];
 let categories = new Set();
 
-// Function to generate SEO friendly slug
-function generateProductSlug(product) {
-  if (!product || !product.name) return product.id;
-  const nameSlug = product.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return product.id + '-' + nameSlug;
+// Utility: Generate URL slug from product name
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[\s]+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
+// Generate product URL with SEO-friendly slug
+function getProductUrl(product) {
+  const slug = slugify(product.name);
+  return `https://statusring.in/?product=${product.id}&name=${slug}`;
+}
+
+// Inject Product JSON-LD structured data for Google Merchant Center
+function injectProductJsonLd(product) {
+  const jsonLdEl = document.getElementById('productJsonLd');
+  if (!jsonLdEl) return;
+
+  const productUrl = getProductUrl(product);
+  const productImage = product.thumbnail || product.image1 || '';
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description || `${product.name} - Premium quality poster for clinic & hospital interior. Size: ${product.size || '12x18 inch'}. Brand: Status Ring.`,
+    "image": [productImage],
+    "brand": {
+      "@type": "Brand",
+      "name": product.brand || "Status Ring"
+    },
+    "sku": `SR-${product.id}`,
+    "mpn": `SR-${product.id}`,
+    "color": product.color || "Multi",
+    "size": product.size || "12x18 inch",
+    "category": product.category || "Dental Posters",
+    "url": productUrl,
+    "offers": {
+      "@type": "Offer",
+      "url": productUrl,
+      "priceCurrency": "INR",
+      "price": product.price,
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition",
+      "seller": {
+        "@type": "Organization",
+        "name": "StatusRing"
+      },
+      "shippingDetails": {
+        "@type": "OfferShippingDetails",
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "IN"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 1,
+            "maxValue": 3,
+            "unitCode": "DAY"
+          },
+          "transitTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 3,
+            "maxValue": 7,
+            "unitCode": "DAY"
+          }
+        }
+      },
+      "hasMerchantReturnPolicy": {
+        "@type": "MerchantReturnPolicy",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 7,
+        "returnMethod": "https://schema.org/ReturnByMail"
+      }
+    }
+  };
+
+  // Add additional images if available
+  if (product.image1 && product.image1 !== productImage) {
+    jsonLd.image.push(product.image1);
+  }
+  if (product.image2 && product.image2.length > 0) {
+    jsonLd.image.push(product.image2);
+  }
+
+  jsonLdEl.textContent = JSON.stringify(jsonLd);
+}
+
+// Clear Product JSON-LD (when closing product detail)
+function clearProductJsonLd() {
+  const jsonLdEl = document.getElementById('productJsonLd');
+  if (jsonLdEl) jsonLdEl.textContent = '';
+}
+
+// Update page meta tags dynamically for the product
+function updatePageMeta(product) {
+  if (!product) {
+    // Reset to default
+    document.title = 'StatusRing Store | Premium Dental Posters & Clinic Frames';
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = 'Buy premium dental posters, clinic frames & patient education materials online at StatusRing.in. 200+ designs for dentists, skin clinics & hospitals.';
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.href = 'https://statusring.in/';
+    const ogUrl = document.querySelector('meta[property="og:url"]');
+    if (ogUrl) ogUrl.content = 'https://statusring.in/';
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = 'StatusRing Store | Premium Dental Posters & Clinic Frames';
+    return;
+  }
+
+  const productUrl = getProductUrl(product);
+  document.title = `${product.name} | StatusRing Store - Buy Online ₹${product.price}`;
+  
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.content = `Buy ${product.name} online at ₹${product.price}. ${product.description || 'Premium quality poster for dental clinic interior.'}. Free shipping - StatusRing.in`;
+
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) canonical.href = productUrl;
+
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogUrl) ogUrl.content = productUrl;
+
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  if (ogTitle) ogTitle.content = `${product.name} | StatusRing Store`;
+
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  if (ogDesc) ogDesc.content = `Buy ${product.name} online at ₹${product.price}. Premium quality poster. Free shipping.`;
+
+  const ogImage = document.querySelector('meta[property="og:image"]');
+  if (ogImage) ogImage.content = product.thumbnail || '';
 }
 
 // Load products from data.js
@@ -26,19 +159,25 @@ function loadProducts() {
     console.log('Products loaded:', allProducts.length);
     displayCategories();
     displayProducts(allProducts);
-    
-    // Check for deep link
-    const urlParams = new URLSearchParams(window.location.search);
-    const productParam = urlParams.get('product');
-    if (productParam) {
-      const productId = parseInt(productParam);
-      const product = allProducts.find(p => p.id == productId);
-      if (product) {
-        setTimeout(() => showProductDetail(product), 100);
-      }
-    }
+
+    // Check for deep link: ?product=ID
+    handleDeepLink();
   } else {
     console.error('No products found');
+  }
+}
+
+// Handle deep link from URL (?product=ID)
+function handleDeepLink() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('product');
+  
+  if (productId) {
+    const product = allProducts.find(p => p.id == productId);
+    if (product) {
+      // Small delay to ensure DOM is ready
+      setTimeout(() => showProductDetail(product), 200);
+    }
   }
 }
 
@@ -97,14 +236,13 @@ function displayProducts(products) {
     card.className = 'product-card';
     card.style.cursor = 'pointer';
     card.innerHTML = `
-      <div class="product-image" style="position: relative;">
+      <div class="product-image">
         <img src="${productImage}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/280x250?text=Product';">
-        <button class="card-share-btn" onclick="event.stopPropagation(); shareProduct(${p.id}, '${p.name.replace(/'/g, '&apos;').replace(/"/g, '&quot;')}')" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 35px; height: 35px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: #333;" title="Share"><i class="fas fa-share-alt"></i></button>
       </div>
       <div class="product-info">
         <h3 class="product-name">${p.name}</h3>
         <p class="product-seller">${sellerName}</p>
-        <div class="product-price">\u20B9${p.price}</div>
+        <div class="product-price">₹${p.price}</div>
         <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
       </div>
     `;
@@ -130,70 +268,17 @@ function searchProducts() {
   displayProducts(filteredProducts);
 }
 
-function closeProductModal() {
-  const modal = document.getElementById('productModal');
-  if (modal) modal.classList.remove('show');
-  document.body.style.overflow = 'auto';
-  
-  // Revert SEO changes
-  document.title = 'StatusRing Store | Premium Dental Posters & Clinic Frames';
-  const existingSchema = document.getElementById('product-json-ld');
-  if (existingSchema) existingSchema.remove();
-  
-  // Clear URL parameter for deep linking
-  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname;
-  window.history.pushState({path:newUrl}, '', newUrl);
-}
-
 function showProductDetail(product) {
   window.currentProduct = product;
   window.WHATSAPP_NUMBER = WHATSAPP_NUMBER;
   
-  const productSlug = generateProductSlug(product);
-  
-  // Update URL for deep linking
-  const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + productSlug;
-  window.history.pushState({path:newUrl}, '', newUrl);
-  
-  // Update SEO dynamically
-  document.title = product.name + ' - StatusRing Store';
-  
-  // Inject Product JSON-LD for AEO/SEO
-  let schemaScript = document.getElementById('product-json-ld');
-  if (!schemaScript) {
-    schemaScript = document.createElement('script');
-    schemaScript.id = 'product-json-ld';
-    schemaScript.type = 'application/ld+json';
-    document.head.appendChild(schemaScript);
-  }
-  
-  const productSchema = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": product.name,
-    "image": product.thumbnail || "https://www.statusring.in/images/og-image.jpg",
-    "description": product.description || "Premium dental product",
-    "sku": product.id,
-    "brand": {
-      "@type": "Brand",
-      "name": product.brand || "Status Ring"
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": newUrl,
-      "priceCurrency": "INR",
-      "price": product.price,
-      "availability": "https://schema.org/InStock"
-    }
-  };
-  schemaScript.textContent = JSON.stringify(productSchema);
-  
   const modal = document.getElementById('productModal');
   if (modal) {
     document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/400x400?text=Product';
+    document.getElementById('detailImage').alt = product.name;
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
-    document.getElementById('detailPrice').textContent = '\u20B9' + product.price;
+    document.getElementById('detailPrice').textContent = '₹' + product.price;
     document.getElementById('detailSize').textContent = product.size || 'N/A';
     document.getElementById('detailColor').textContent = product.color || 'N/A';
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
@@ -204,32 +289,21 @@ function showProductDetail(product) {
     if (detailBtn) {
       detailBtn.onclick = () => {
         addToCart(product.id, product.name, product.price, product.thumbnail);
-        closeProductModal();
+        modal.classList.remove('show');
+        document.body.style.overflow = 'auto';
       };
     }
     
-    // Set up share button
-    const shareBtn = document.getElementById('detailShareBtn');
-    if (shareBtn) {
-      shareBtn.onclick = async () => {
-        const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + product.id;
-        if (navigator.share) {
-          try {
-            await navigator.share({
-              title: product.name,
-              text: 'Check out ' + product.name + ' on StatusRing Store!',
-              url: shareUrl,
-            });
-          } catch (err) {
-            console.error('Error sharing:', err);
-          }
-        } else {
-          navigator.clipboard.writeText(shareUrl).then(() => {
-            alert('Link copied to clipboard!');
-          }).catch(err => console.error('Copy failed', err));
-        }
-      };
-    }
+    // Update URL with product deep link (without reload)
+    const slug = slugify(product.name);
+    const newUrl = `?product=${product.id}&name=${slug}`;
+    window.history.pushState({productId: product.id}, product.name, newUrl);
+
+    // Inject Product JSON-LD for Google
+    injectProductJsonLd(product);
+
+    // Update page title & meta for SEO
+    updatePageMeta(product);
     
     modal.classList.add('show');
     document.body.style.overflow = 'hidden';
@@ -249,11 +323,44 @@ window.addEventListener('DOMContentLoaded', function() {
   const modal = document.getElementById('productModal');
   
   if (closeModal) {
-    closeModal.onclick = closeProductModal;
+    closeModal.onclick = () => {
+      if (modal) modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+      // Reset URL and meta to homepage
+      window.history.pushState({}, 'StatusRing Store', '/');
+      clearProductJsonLd();
+      updatePageMeta(null);
+    };
   }
   
   if (modalOverlay) {
-    modalOverlay.onclick = closeProductModal;
+    modalOverlay.onclick = () => {
+      if (modal) modal.classList.remove('show');
+      document.body.style.overflow = 'auto';
+      // Reset URL and meta to homepage
+      window.history.pushState({}, 'StatusRing Store', '/');
+      clearProductJsonLd();
+      updatePageMeta(null);
+    };
+  }
+});
+
+// Handle browser back/forward button
+window.addEventListener('popstate', function(event) {
+  const modal = document.getElementById('productModal');
+  if (event.state && event.state.productId) {
+    const product = allProducts.find(p => p.id == event.state.productId);
+    if (product) {
+      showProductDetail(product);
+      return;
+    }
+  }
+  // Close modal if going back to store
+  if (modal) {
+    modal.classList.remove('show');
+    document.body.style.overflow = 'auto';
+    clearProductJsonLd();
+    updatePageMeta(null);
   }
 });
 
@@ -262,25 +369,4 @@ function initStore() {
   filteredProducts = [];
   categories = new Set();
   loadProducts();
-}
-
-async function shareProduct(productId, productName) {
-  const product = allProducts.find(p => p.id == productId);
-  const slug = product ? generateProductSlug(product) : productId;
-  const shareUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?product=' + slug;
-  if (navigator.share) {
-    try {
-      await navigator.share({
-        title: productName,
-        text: 'Check out ' + productName + ' on StatusRing Store!',
-        url: shareUrl,
-      });
-    } catch (err) {
-      console.error('Error sharing:', err);
-    }
-  } else {
-    navigator.clipboard.writeText(shareUrl).then(() => {
-      alert('Link copied to clipboard!');
-    }).catch(err => console.error('Copy failed', err));
-  }
 }
