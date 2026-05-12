@@ -3,32 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="MZp-NpWpCTGlHZdqDzIvYYpuiFVdQs4Fn1KI2_H6eQ0" />
-    <meta name="description" content="Premium Dental Posters and Clinic Decor for Dentists. Explore StatusRing Store for high-quality Dental Clinic Frames, Dentist Posters, and educational materials.">
-    <meta name="keywords" content="Dental Posters, Dental Frames, Dentist posters, Dental Clinic Frames, Dental Clinic Posters, Dental Clinic Decor, Dental Patient Education Poster, Dental artwork, Skin Treatment Posters">
-    <meta property="og:title" content="StatusRing Store | Premium Dental Posters & Clinic Decor">
-    <meta property="og:description" content="Premium Dental Posters and Clinic Decor for Dentists. High-quality frames and educational posters.">
-    <meta property="og:url" content="https://www.statusring.in/">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
     <title>StatusRing Store | Premium Dental Posters & Clinic Frames</title>
-    <!-- JSON-LD LocalBusiness / Store Schema -->
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Buy premium dental posters, clinic frames & patient education materials online at StatusRing.in. 200+ designs for dentists, skin clinics & hospitals. Free shipping across India.">
+    <meta name="keywords" content="dental posters, dentist clinic posters, patient education posters, dental clinic interior, dental frames, skin posters, hair clinic posters, StatusRing">
+    <meta name="author" content="StatusRing">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <link rel="canonical" href="https://statusring.in/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://statusring.in/">
+    <meta property="og:title" content="StatusRing Store | Premium Dental Posters & Clinic Frames">
+    <meta property="og:description" content="Buy premium dental posters, clinic frames & patient education materials online. 200+ designs for dentists, skin clinics & hospitals. Free shipping across India.">
+    <meta property="og:image" content="https://m.media-amazon.com/images/I/71EAKd7E4GL.jpg">
+    <meta property="og:site_name" content="StatusRing Store">
+    <meta property="og:locale" content="en_IN">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="StatusRing Store | Premium Dental Posters & Clinic Frames">
+    <meta name="twitter:description" content="Buy premium dental posters, clinic frames & patient education materials online. 200+ designs for dentists.">
+    <meta name="twitter:image" content="https://m.media-amazon.com/images/I/71EAKd7E4GL.jpg">
+
+    <!-- JSON-LD Structured Data: Organization + WebSite -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "MedicalBusiness",
-      "name": "StatusRing Store",
-      "description": "Premium Dental Posters and Clinic Decor for Dentists",
-      "url": "https://www.statusring.in/",
-      "telephone": "+919714293282",
-      "address": {
-        "@type": "PostalAddress",
-        "addressCountry": "IN"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://statusring.in/#organization",
+          "name": "StatusRing",
+          "url": "https://statusring.in",
+          "logo": "https://m.media-amazon.com/images/I/71EAKd7E4GL.jpg",
+          "description": "Premium Dental Posters, Clinic Frames & Patient Education Materials for Dentists and Healthcare Professionals",
+          "sameAs": [
+            "https://instagram.com/statusring.in",
+            "https://m.youtube.com/channel/UCczc70dFGaC0QBDlyxY8Muw",
+            "https://www.amazon.in/s?me=A178KJ0TJ3NFQ9"
+          ],
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "sales",
+            "availableLanguage": ["English", "Hindi"]
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://statusring.in/#website",
+          "url": "https://statusring.in",
+          "name": "StatusRing Store",
+          "publisher": {"@id": "https://statusring.in/#organization"},
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://statusring.in/?search={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "CollectionPage",
+          "@id": "https://statusring.in/#webpage",
+          "url": "https://statusring.in",
+          "name": "StatusRing Store - Premium Dental Posters & Clinic Decor",
+          "isPartOf": {"@id": "https://statusring.in/#website"},
+          "about": {"@id": "https://statusring.in/#organization"},
+          "description": "Browse 200+ premium dental posters, patient education materials, skin care posters, and clinic interior decor. High-quality prints at affordable prices."
+        }
+      ]
     }
     </script>
-    <link rel="stylesheet" href="css/style.css?v=3">
-    <link rel="stylesheet" href="css/responsive.css?v=3">
+
+    <!-- Dynamic Product JSON-LD placeholder (injected by store.js) -->
+    <script type="application/ld+json" id="productJsonLd"></script>
+
+    <link rel="stylesheet" href="css/style.css?v=4">
+    <link rel="stylesheet" href="css/responsive.css?v=4">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body>
@@ -58,8 +109,8 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h2>Premium Dental Clinic Decor</h2>
-            <p>High-quality Dental Posters, Dentist Frames & Educational Materials for Clinics</p>
+            <h2>StatusRing Store</h2>
+            <p>Premium Dental & Medical Education Posters</p>
         </div>
     </section>
 
@@ -109,16 +160,15 @@
 
     <!-- Scripts -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="js/data.js?v=3"></script>
-    <script src="js/store.js?v=3"></script>
-    <script src="js/cart.js?v=3"></script>
-    <script src="js/checkout.js?v=3"></script>
-    <script src="js/sheets-loader.js?v=3"></script>
+    <script src="js/data.js?v=4"></script>
+    <script src="js/store.js?v=4"></script>
+    <script src="js/cart.js?v=4"></script>
+    <script src="js/checkout.js?v=4"></script>
+    <script src="js/sheets-loader.js?v=4"></script>
     <!-- Product Detail Modal -->
 <div id="productModal" class="product-modal">
   <div class="modal-overlay" id="modalOverlay"></div>
   <div class="modal-content">
-    <button id="detailShareBtn" class="modal-share-icon" style="position: absolute; top: 15px; right: 50px; background: none; border: none; font-size: 20px; cursor: pointer; color: #666; padding: 5px;" title="Share"><i class="fas fa-share-alt"></i></button>
     <button class="modal-close" id="closeModal">&times;</button>
     <div class="modal-body">
       <div class="product-detail-image">
