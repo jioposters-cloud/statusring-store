@@ -137,7 +137,7 @@
         <div class="cart-footer">
             <div class="cart-total">
                 <strong>Total: </strong>
-                <span id="cartTotal">₹0</span>
+                <span id="cartTotal">â‚¹0</span>
             </div>
             <button id="checkoutWhatsApp" class="btn btn-whatsapp">
                 <i class="fab fa-whatsapp"></i> Order via WhatsApp
@@ -160,11 +160,11 @@
 
     <!-- Scripts -->
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="js/data.js?v=4"></script>
-    <script src="js/store.js?v=4"></script>
-    <script src="js/cart.js?v=4"></script>
-    <script src="js/checkout.js?v=4"></script>
-    <script src="js/sheets-loader.js?v=4"></script>
+    <script src="js/data.js?v=5"></script>
+    <script src="js/store.js?v=5"></script>
+    <script src="js/cart.js?v=5"></script>
+    <script src="js/checkout.js?v=5"></script>
+    <script src="js/sheets-loader.js?v=5"></script>
     <!-- Product Detail Modal -->
 <div id="productModal" class="product-modal">
   <div class="modal-overlay" id="modalOverlay"></div>
@@ -197,6 +197,18 @@
         </div>
         <div class="detail-actions">
           <button id="detailAddToCart" class="btn-add-to-cart">Add to cart</button>
+          <div class="share-buttons">
+            <button id="shareWhatsApp" class="share-btn share-whatsapp" title="Share on WhatsApp">
+              <i class="fab fa-whatsapp"></i>
+            </button>
+            <button id="shareCopyLink" class="share-btn share-copy" title="Copy Link">
+              <i class="fas fa-link"></i>
+            </button>
+            <button id="shareNative" class="share-btn share-native" title="Share">
+              <i class="fas fa-share-alt"></i>
+            </button>
+          </div>
+          <span id="shareFeedback" class="share-feedback"></span>
         </div>
       </div>
     </div>
@@ -245,7 +257,6 @@
         <a href="https://www.amazon.in/shop/mydeesa.in?ref_=cm_sw_r_apann_aipsfshop_aipsfmydeesa.in_YDDVYWH34QEZM5JAN5VZ" class="link-pill" target="_blank" rel="noopener">Classified Store</a>
     </div>
 
-<script src="js/detail.js"></script>
     <script src="js/prevent-image-download.js"></script>
 </body>
 </html>
