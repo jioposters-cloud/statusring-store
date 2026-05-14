@@ -123,10 +123,10 @@ function updatePageMeta(product) {
   }
 
   const productUrl = getProductUrl(product);
-  document.title = `${product.name} | StatusRing Store - Buy Online â‚¹${product.price}`;
+  document.title = `${product.name} | StatusRing Store - Buy Online \u20B9${product.price}`;
   
   const metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.content = `Buy ${product.name} online at â‚¹${product.price}. ${product.description || 'Premium quality poster for dental clinic interior.'}. Free shipping - StatusRing.in`;
+  if (metaDesc) metaDesc.content = `Buy ${product.name} online at \u20B9${product.price}. ${product.description || 'Premium quality poster for dental clinic interior.'}. Free shipping - StatusRing.in`;
 
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) canonical.href = productUrl;
@@ -138,7 +138,7 @@ function updatePageMeta(product) {
   if (ogTitle) ogTitle.content = `${product.name} | StatusRing Store`;
 
   const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.content = `Buy ${product.name} online at â‚¹${product.price}. Premium quality poster. Free shipping.`;
+  if (ogDesc) ogDesc.content = `Buy ${product.name} online at \u20B9${product.price}. Premium quality poster. Free shipping.`;
 
   const ogImage = document.querySelector('meta[property="og:image"]');
   if (ogImage) ogImage.content = product.thumbnail || '';
@@ -243,7 +243,7 @@ function displayProducts(products) {
       <div class="product-info">
         <h3 class="product-name">${p.name}</h3>
         <p class="product-seller">${sellerName}</p>
-        <div class="product-price">â‚¹${p.price}</div>
+        <div class="product-price">\u20B9${p.price}</div>
         <button class="add-to-cart-btn" onclick="event.stopPropagation(); addToCart(${p.id},'${p.name.replace(/'/g, '&apos;')}',${p.price},'${productImage.replace(/'/g, '&apos;')}')">Add to cart</button>
       </div>
     `;
@@ -279,7 +279,7 @@ function showProductDetail(product) {
     document.getElementById('detailImage').alt = product.name;
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
-    document.getElementById('detailPrice').textContent = 'â‚¹' + product.price;
+    document.getElementById('detailPrice').textContent = '\u20B9' + product.price;
     document.getElementById('detailSize').textContent = product.size || 'N/A';
     document.getElementById('detailColor').textContent = product.color || 'N/A';
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
