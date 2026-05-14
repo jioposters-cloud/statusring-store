@@ -1,5 +1,5 @@
 // Products data with categories
-const products = [
+var products = [
   {
     id: 1,
     name: 'Dental Bridge Poster - Dentist Clinic',
@@ -163,7 +163,7 @@ const products = [
 ];
 
 // Additional products (IDs 11-20)
-const productsExtra = [
+var productsExtra = [
   {
     id: 11,
     name: 'Oral health first patient education Dental poster',
