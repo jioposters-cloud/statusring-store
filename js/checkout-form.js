@@ -19,7 +19,7 @@ function prefillForm() {
 
 function renderCartReview() { 
   let html = ''; 
-  cart.forEach(item => html += `<li style=\"padding:0.5rem 0;border-bottom:1px solid #eee\"><strong>${item.name}</strong> x${item.quantity} = <strong>₹${(item.price * item.quantity).toLocaleString()}</strong></li>`);
+  cart.forEach(item => html += `<li style=\"padding:0.5rem 0;border-bottom:1px solid #eee\"><strong>${item.name}</strong> x${item.quantity} = <strong>\u20B9${(item.price * item.quantity).toLocaleString()}</strong></li>`);
   document.getElementById('cart-items-review').innerHTML = `<ul style=\"list-style:none\">${html}</ul>`;
 }
 
@@ -29,10 +29,10 @@ function renderOrderSummary() {
   cart.forEach(item => {
     const itemTotal = item.price * item.quantity;
     total += itemTotal;
-    html += `<div class=\"order-item\"><span>${item.name} x${item.quantity}</span><span>₹${itemTotal.toLocaleString()}</span></div>`;
+    html += `<div class=\"order-item\"><span>${item.name} x${item.quantity}</span><span>\u20B9${itemTotal.toLocaleString()}</span></div>`;
   });
   document.getElementById('order-items-summary').innerHTML = html;
-  document.getElementById('total-amount').textContent = '₹' + total.toLocaleString();
+  document.getElementById('total-amount').textContent = '\u20B9' + total.toLocaleString();
 }
 
 function goToStep(stepNumber) { 
@@ -62,7 +62,7 @@ function validateAndGoToStep(stepNumber) {
 
 function displayCustomerSummary() { 
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const html = `<strong>Customer Details:</strong><br>Name: ${customerDetails.name}<br>Email: ${customerDetails.email}<br>Phone: ${customerDetails.phone}<br>Address: ${customerDetails.address}<br>City: ${customerDetails.city}<br><br><strong>Total: ₹${total.toLocaleString()}</strong>`;
+  const html = `<strong>Customer Details:</strong><br>Name: ${customerDetails.name}<br>Email: ${customerDetails.email}<br>Phone: ${customerDetails.phone}<br>Address: ${customerDetails.address}<br>City: ${customerDetails.city}<br><br><strong>Total: \u20B9${total.toLocaleString()}</strong>`;
   document.getElementById('customer-summary').innerHTML = html;
 }
 
@@ -98,12 +98,12 @@ function sendOrderToGoogleAppScript(paymentDetails) {
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMjLTN6yMHb192iUWPeP8NOhmzVy3uCTqJ1fZazmRAz9Vv77nVj-hEtXc2oRJdgD2Q/exec';
   
   if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-    console.warn("⚠️ Google Apps Script URL not set");
+    console.warn("âš ï¸ Google Apps Script URL not set");
     return;
   }
   
   fetch(SCRIPT_URL, {
     method: 'POST',
     body: JSON.stringify(paymentDetails)
-  }).then(res => res.json()).then(data => console.log('✅ Sent to sheet:', data)).catch(e => console.error('❌ Failed:', e));
+  }).then(res => res.json()).then(data => console.log('âœ… Sent to sheet:', data)).catch(e => console.error('âŒ Failed:', e));
 }
