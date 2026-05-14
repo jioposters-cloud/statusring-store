@@ -200,14 +200,14 @@ function showSuccessNotification(paymentDetails, response) {
   const notification = document.createElement('div');
   notification.style.cssText = 'position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 3000; text-align: left; max-width: 500px; font-family: Arial, sans-serif;';
   notification.innerHTML = `
-    <h2 style="color: #1abc9c; margin-bottom: 15px;">✅ Payment Successful!</h2>
+    <h2 style="color: #1abc9c; margin-bottom: 15px;">âœ… Payment Successful!</h2>
     <p>Thank you for your order.</p>
     <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; margin-bottom: 15px; font-size: 13px;">
       <p style="margin: 5px 0;"><strong>Order ID:</strong> ${paymentDetails.orderId}</p>
       <p style="margin: 5px 0;"><strong>Name:</strong> ${paymentDetails.customer.name}</p>
       <p style="margin: 5px 0;"><strong>Email:</strong> ${paymentDetails.customer.email}</p>
       <p style="margin: 5px 0;"><strong>Phone:</strong> ${paymentDetails.customer.phone}</p>
-      <p style="margin: 5px 0;"><strong>Total:</strong> ₹${paymentDetails.total}</p>
+      <p style="margin: 5px 0;"><strong>Total:</strong> \u20B9${paymentDetails.total}</p>
       <p style="margin: 5px 0;"><strong>Payment ID:</strong> ${response.razorpay_payment_id}</p>
     </div>
     <p style="margin-bottom: 15px; font-size: 12px; color: #999;">Check your email for order confirmation (via Zapier).</p>
@@ -221,7 +221,7 @@ function sendOrderToGoogleAppScript(paymentDetails, response) {
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMjLTN6yMHb192iUWPeP8NOhmzVy3uCTqJ1fZazmRAz9Vv77nVj-hEtXc2oRJdgD2Q/exec'; 
   
   if (SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-    console.warn("⚠️ Google Apps Script URL not set. Data not sent to Sheet.");
+    console.warn("âš ï¸ Google Apps Script URL not set. Data not sent to Sheet.");
     return;
   }
 
@@ -232,12 +232,12 @@ function sendOrderToGoogleAppScript(paymentDetails, response) {
   .then(res => res.json())
   .then(data => {
     if (data.status === 'success') {
-      console.log('✅ Order successfully saved to Google Sheet & Email sent!');
+      console.log('âœ… Order successfully saved to Google Sheet & Email sent!');
     } else {
-      console.error('❌ Error from Google Script:', data.message);
+      console.error('âŒ Error from Google Script:', data.message);
     }
   })
-  .catch(e => console.error('❌ Failed to send request to Google Script:', e));
+  .catch(e => console.error('âŒ Failed to send request to Google Script:', e));
 }
 
 // 6. GET ALL ORDERS FROM STORAGE (for admin viewing)
@@ -266,7 +266,7 @@ function showAllOrders() {
       console.log(`Phone: ${order.customer.phone}`);
       console.log(`Address: ${order.customer.address}`);
       console.log(`Payment ID: ${order.paymentId}`);
-      console.log(`Amount: ₹${order.total}`);
+      console.log(`Amount: \u20B9${order.total}`);
       console.log(`Items: ${JSON.stringify(order.items, null, 2)}`);
       console.log(`Timestamp: ${order.timestamp}`);
       console.log(`Status: PAID`);
@@ -299,11 +299,11 @@ if (checkoutWhatsAppBtn) {
     let message = 'Hello StatusRing, I would like to order:%0A%0A';
     
     cart.forEach(item => {
-      message += `* ${item.name} (Qty: ${item.quantity}) - ₹${item.price * item.quantity}%0A`;
+      message += `* ${item.name} (Qty: ${item.quantity}) - \u20B9${item.price * item.quantity}%0A`;
     });
     
     const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    message += `%0A*Total Amount: ₹${total}*%0A%0A*Customer Details:*%0AName: ${customer.name}%0AEmail: ${customer.email}%0APhone: ${customer.phone}%0AAddress: ${customer.address}`;
+    message += `%0A*Total Amount: \u20B9${total}*%0A%0A*Customer Details:*%0AName: ${customer.name}%0AEmail: ${customer.email}%0APhone: ${customer.phone}%0AAddress: ${customer.address}`;
     
     const order = {
       orderId: 'order_' + Date.now(),
