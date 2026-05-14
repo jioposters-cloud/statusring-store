@@ -64,7 +64,7 @@ function updateCartUI() {
   if (cart.length === 0) {
     cartItemsDiv.innerHTML = '<p class="empty-cart">Your cart is empty</p>';
     const totalEl = document.getElementById('cartTotal');
-    if (totalEl) totalEl.textContent = '₹0';
+    if (totalEl) totalEl.textContent = '\u20B90';
     return;
   }
   
@@ -80,7 +80,7 @@ function updateCartUI() {
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.name}</div>
-          <div class="cart-item-price">₹${item.price}</div>
+          <div class="cart-item-price">\u20B9${item.price}</div>
           <div class="cart-item-quantity">Qty: ${item.quantity}</div>
         </div>
       </div>
@@ -94,7 +94,7 @@ function updateCartUI() {
   // Update total
   const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalEl = document.getElementById('cartTotal');
-  if (totalEl) totalEl.textContent = '₹' + total;
+  if (totalEl) totalEl.textContent = '\u20B9' + total;
 }
 
 // Cart sidebar toggle
