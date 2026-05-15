@@ -238,6 +238,9 @@ function displayProducts(products) {
     card.style.cursor = 'pointer';
     card.innerHTML = `
       <div class="product-image">
+        <div class="card-share-icon" onclick="event.stopPropagation(); shareProduct(${p.id}, 'native')" title="Share product">
+          <i class="fas fa-share-alt"></i>
+        </div>
         <img src="${productImage}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/280x250?text=Product';">
       </div>
       <div class="product-info">
@@ -275,11 +278,18 @@ function showProductDetail(product) {
   
   const modal = document.getElementById('productModal');
   if (modal) {
-    document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/400x400?text=Product';
+    window.currentProductId = product.id;
+    document.getElementById('detailImage').src = product.thumbnail || 'https://via.placeholder.com/600x400?text=Product';
     document.getElementById('detailImage').alt = product.name;
     document.getElementById('detailName').textContent = product.name;
     document.getElementById('detailSeller').textContent = product.brand || 'Status Ring';
     document.getElementById('detailPrice').textContent = '\u20B9' + product.price;
+    
+    // Set up modal share buttons
+    document.getElementById('shareWhatsApp').onclick = () => shareProduct(product.id, 'whatsapp');
+    document.getElementById('shareCopyLink').onclick = () => shareProduct(product.id, 'copy');
+    document.getElementById('shareNative').onclick = () => shareProduct(product.id, 'native');
+
     document.getElementById('detailSize').textContent = product.size || 'N/A';
     document.getElementById('detailColor').textContent = product.color || 'N/A';
     document.getElementById('detailBrand').textContent = product.brand || 'Status Ring';
@@ -370,4 +380,38 @@ function initStore() {
   filteredProducts = [];
   categories = new Set();
   loadProducts();
+}
+
+// Sharing functionality
+function shareProduct(productId, type) {
+  const product = allProducts.find(p => p.id == productId);
+  if (!product) return;
+
+  const slug = slugify(product.name);
+  const url = `${window.location.origin}${window.location.pathname}?product=${product.id}&name=${slug}`;
+  const text = `Check out this ${product.name} on StatusRing Store! Price: \u20B9${product.price}`;
+
+  if (type === 'whatsapp') {
+    window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`, '_blank');
+  } else if (type === 'copy') {
+    navigator.clipboard.writeText(url).then(() => {
+      const feedback = document.getElementById('shareFeedback');
+      if (feedback) {
+        feedback.textContent = 'Link copied to clipboard!';
+        setTimeout(() => feedback.textContent = '', 3000);
+      } else {
+        alert('Link copied to clipboard!');
+      }
+    });
+  } else if (type === 'native') {
+    if (navigator.share) {
+      navigator.share({
+        title: product.name,
+        text: text,
+        url: url
+      }).catch(console.error);
+    } else {
+      shareProduct(productId, 'copy');
+    }
+  }
 }
