@@ -1,0 +1,42 @@
+{
+  "ucp": {
+    "version": "2026-01-23",
+    "merchant": {
+      "name": "StatusRing Store",
+      "domain": "statusring.in",
+      "logo": "https://m.media-amazon.com/images/I/71EAKd7E4GL.jpg",
+      "description": "Premium Dental Posters & Clinic Decor for dental professionals."
+    },
+    "services": {
+      "dev.ucp.shopping": {
+        "version": "2026-01-23",
+        "spec": "https://ucp.dev/2026-01-23/specification/shopping",
+        "rest": {
+          "endpoint": "https://statusring-api.onrender.com/api/ucp-shopping.php",
+          "schema": "https://ucp.dev/2026-01-23/schemas/shopping.json"
+        }
+      }
+    },
+    "capabilities": [
+      {
+        "name": "dev.ucp.shopping.catalog",
+        "version": "2026-01-23",
+        "settings": {
+          "catalog_url": "https://statusring-api.onrender.com/api/ucp-catalog.php"
+        }
+      },
+      {
+        "name": "dev.ucp.shopping.cart",
+        "version": "2026-01-23"
+      },
+      {
+        "name": "dev.ucp.shopping.checkout",
+        "version": "2026-01-23",
+        "settings": {
+          "supported_payment_handlers": ["google_pay", "razorpay"],
+          "checkout_url": "https://statusring-api.onrender.com/api/ucp-checkout.php"
+        }
+      }
+    ]
+  }
+}
